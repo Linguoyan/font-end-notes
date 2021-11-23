@@ -83,7 +83,7 @@ el 的两种写法：
 data 的两种写法：
 
 1. 对象式
-2. 函数式：组件化必须 data 必须使用函数式
+2. 函数式：组件化时必须 data 必须使用函数式
 3. 注意 **Vue 管理的函数不能用箭头函数，否则 this 的指向问题会出错**
 
 
@@ -178,7 +178,7 @@ Object.defineProperty(obj2, "x", {
 
 
 
-- 使用 `v-on:xxx` 或 `@xxx` 绑定事件，`xxx`是事件名
+- 使用 `v-on:xxx` 或 `@xxx` 绑定事件，`xxx` 是事件名
 - 事件的回调函数配置在 `methods` 中，最终挂载到 `vm` 上
 - `methods` 中配置的函数不可使用箭头函数，否则 `this` 就不会指向 `vm` 了
 - `methods` 中配置的函数是被 `Vue` 管理的函数，`this` 指向 `vm` 或实例对象
@@ -519,3 +519,136 @@ data {
 </template>
 ~~~
 
+
+
+## 列表渲染
+
+
+
+### v-for 
+
+1. 通常用于展示列表数据
+2. 语法：`v-for="item in items :key="item.id"` 其中 `items` 是源数组，`item` 是数组元素的别名
+3. 可遍历：数组、对象、字符串（用的很少）、指定次数（用的很少）
+
+
+
+### Vue 中的 Key
+
+
+
+**虚拟 Dom 中 key 的作用**
+
+key 是虚拟 DOM 对象的标识，当数据发生变化时，Vue 会根据新数据生成新的虚拟 DOM。然后将新虚拟 DOM 和旧虚拟 DOM 进行差异比较
+
+
+
+**虚拟节点对比规则**
+
+- 旧虚拟 DOM 中找到了与新虚拟 DOM 相同的 key
+  - 若虚拟 DOM 中内容没变, 直接使用之前的真实 DOM
+  - 若虚拟 DOM 中内容变了, 则生成新的真实 DOM，随后替换掉页面中之前的真实 DOM
+- 旧虚拟 DOM 没有找到和新虚拟 DOM 相同的 key
+  - 创建新的 DOM 节点，随后渲染页面
+
+
+
+**用 index 作为 key 可能引发的问题**
+
+若对数据进行：逆序添加、逆序删除等破坏顺序操作，index 发生改变会产生没有必要的更新
+
+如果 DOM 结构包含输入类节点，会产生错误的更新
+
+
+
+**如何合理选择 key？**
+
+- 最好使用每条数据的唯一标识作为 key, 比如 id、身份证等唯一值
+- 如果不存在对数据的逆序添加、逆序删除等破坏顺序操作，仅用于展示，使用 index 作为 key 也是可以的
+
+~~~html
+<!-- 出现错误 key需取唯一值，即id -->
+<ul>
+    <li v-for="(p,index) of persons" :key="index">
+        {{p.name}}-{{p.age}}
+        <input type="text">
+    </li>
+</ul>
+<script>
+new Vue({
+    el:'#root',
+    data:{
+        persons:[
+            {id:'001',name:'张三',age:18},
+            {id:'002',name:'李四',age:19},
+            {id:'003',name:'王五',age:20}
+        ]
+    },
+    methods: {
+        add(){
+            const p = {id:'004',name:'老刘',age:40}
+            this.persons.unshift(p)
+        }
+    },
+})
+</script>
+~~~
+
+
+
+### 列表过滤
+
+
+
+用 computed 实现
+
+~~~js
+new Vue({
+    el:'#root',
+    data:{
+        keyWord:'',
+        persons:[
+            {id:'001',name:'马冬梅',age:19,sex:'女'},
+            {id:'002',name:'周冬雨',age:20,sex:'女'},
+            {id:'003',name:'周杰伦',age:21,sex:'男'},
+            {id:'004',name:'温兆伦',age:22,sex:'男'}
+        ]
+    },
+    computed:{
+        filPerons(){
+            return this.persons.filter((p)=>{
+                return p.name.indexOf(this.keyWord) !== -1
+            })
+        }
+    }
+})
+~~~
+
+
+
+## 表单提交
+
+
+
+### 输入框的不同类型
+
+`<input type="text"/>`，`v-model` 收集的是 value 值，用户输入的就是 value 值；
+
+`<input type="radio"/>`，`v-model` 收集的是 value 值，且要给标签配置 value 值。
+
+`<input type="checkbox"/>`：
+
+- 没有配置 value 属性，则收集的是 checked（勾选 or 未勾选，是布尔值）
+-   配置 value 属性:
+  -  `v-model` 的初始值是非数组，则收集的是 checked（勾选 or 未勾选，是布尔值）
+  -  `v-model` 的初始值是数组，则收集的的是 value 组成的数组
+
+​    
+
+ 备注：`v-model` 的三个修饰符
+
+​         lazy：失去焦点再收集数据
+
+​         number：输入字符串转为有效的数字
+
+​         trim：输入首尾空格清楚
