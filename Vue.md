@@ -529,7 +529,24 @@ data {
 
 1. 通常用于展示列表数据
 2. 语法：`v-for="item in items :key="item.id"` 其中 `items` 是源数组，`item` 是数组元素的别名
-3. 可遍历：数组、对象、字符串（用的很少）、指定次数（用的很少）
+3. 可遍历：数组、对象、字符串（用得少）、指定次数（用得少）
+
+~~~html
+<!-- 数组遍历 -->
+<li v-for="(p, index) id persons" :key="p.id">
+    {{p.name}}-{{p.age}}
+</li>
+
+<!-- 遍历对象 -->
+<li v-for="(value, k) in car" :key="k">
+    {{k}}-{{value}}
+</li>
+
+<!-- 遍历指定次数 -->
+<li v-for="(number, index) of 5" :key="index">
+    {{index}}-{{number}}
+</li>
+~~~
 
 
 
@@ -539,17 +556,26 @@ data {
 
 **虚拟 Dom 中 key 的作用**
 
-key 是虚拟 DOM 对象的标识，当数据发生变化时，Vue 会根据新数据生成新的虚拟 DOM。然后将新虚拟 DOM 和旧虚拟 DOM 进行差异比较
+key 是虚拟 DOM 对象的标识，当数据发生变化时，Vue 会根据新数据生成新的虚拟 DOM。然后将新虚拟 DOM 和旧虚拟 DOM 进行差异比较（diff 算法）。
 
 
 
 **虚拟节点对比规则**
 
 - 旧虚拟 DOM 中找到了与新虚拟 DOM 相同的 key
-  - 若虚拟 DOM 中内容没变, 直接使用之前的真实 DOM
-  - 若虚拟 DOM 中内容变了, 则生成新的真实 DOM，随后替换掉页面中之前的真实 DOM
+  - 若虚拟 DOM 中内容没变, 直接使用之前的真实 DOM（`input` 输入框对比不变，不更新，其实并没有对上）
+  - 若虚拟 DOM 中内容变了, 则生成新的真实 DOM，随后替换掉页面中之前的真实 DOM（文本内容）
 - 旧虚拟 DOM 没有找到和新虚拟 DOM 相同的 key
-  - 创建新的 DOM 节点，随后渲染页面
+  - 创建新的 DOM 节点，随后渲染页面（用唯一表示作为 key）
+
+~~~html
+<li v-for="(p,index) of persons" :key="index">
+    {{p.name}}-{{p.name}}
+    <input type="text">
+</li>
+~~~
+
+
 
 
 
@@ -596,13 +622,26 @@ new Vue({
 
 
 
-### 列表过滤
+### 列表排序
 
 
 
-用 computed 实现
+可用 `watch` 或 `computed` 实现
 
 ~~~js
+// 使用 watch 监听 keyword，修改原数组
+watch:{
+    keyWord:{
+        immediate:true,
+        handler(val){
+          this.filPerons = this.persons.filter((p)=>{
+              return p.name.indexOf(val) !== -1
+          })
+        }
+    }
+}
+
+// 使用 computed 不修改原数组，直接返回结果，更加简洁
 new Vue({
     el:'#root',
     data:{
@@ -623,6 +662,33 @@ new Vue({
     }
 })
 ~~~
+
+
+
+### 列表过滤
+
+
+
+使用 `computed` 不直接修改原数组
+
+~~~js
+computed: {
+    filPerons(){
+        const arr = this.persons.filter((p)=>{
+            return p.name.indexOf(this.keyWord) !== -1
+        })
+        //判断一下是否需要排序 0原序 1升序 2降序
+        if(this.sortType){
+            arr.sort((p1,p2)=>{
+                return this.sortType === 1 ? p2.age-p1.age : p1.age-p2.age
+            })
+        }
+        return arr
+    }
+}
+~~~
+
+
 
 
 
