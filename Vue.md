@@ -420,7 +420,7 @@ vm.$watch('isHot', function(newVal, oldVal) {
 
 
 
-## 样式渲染
+## 绑定样式
 
 
 
@@ -481,7 +481,7 @@ data {
 
 
 
-### 条件渲染
+## 条件渲染
 
 
 
