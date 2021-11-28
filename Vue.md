@@ -690,6 +690,70 @@ computed: {
 
 
 
+### 模拟 Vue 中的数据监测
+
+~~~js
+let data = {
+    name: "ming",
+    address: "xiamen",
+};
+
+// 陷入死循环
+// Object.defineProperty(data, "name", {
+//   get() {
+//     return data.name;
+//   },
+//   set(value) {
+//     data.name = value;
+//   },
+// });
+
+// 创建一个监视的实例对象，用于监视data中属性的变化
+const obs = new Observer(data);
+//准备一个vm实例对象
+let vm = {};
+vm._data = data = obs;
+function Observer(obj) {
+    //汇总对象中所有的属性形成一个数组
+    const keys = Object.keys(obj);
+    //遍历
+    keys.forEach((k) => {
+        Object.defineProperty(this, k, {
+            get() {
+                return obj[k];
+            },
+            set(val) {
+                console.log(
+                    `${k}被改了，我要去解析模板，生成虚拟DOM.....我要开始忙了`
+                );
+                obj[k] = val;
+            },
+        });
+    });
+}
+~~~
+
+
+
+### Vue 监视数据原理
+
+
+
+1. vue 会监视 data 中所有层次的数据。
+2. 如何监测对象中的数据：通过 `setter` 实现监视，且要在 new Vue 时就传入要监测的数据
+   1. 向对象添加的属性，Vue 默认不做响应式处理
+   2. 如果需给添加对象的属性做响应式，可使用如下API：`Vue.set(target，propertyName/index，value)` 或 `vm.$set(...)`
+3. 如何监测数组中的数据：通过重写数组更新元素的方法，本质就是做了两件事：
+   1. 调用原生对应的方法对数组进行更新
+   2. 重新解析模板，触发更新
+4. Vue 中修改数组某个元素必须使用如下方法：
+   1. push()、pop()、shift()、unshift()、splice()、sort()、reverse()
+   2. Vue.set() 或 vm.$set()
+
+​    
+
+**注意：`Vue.set()` 和 `vm.$set()` 不能给 vm 或 vm的根数据对象(vm.data)添加属性**
+
 
 
 ## 表单提交
@@ -698,23 +762,21 @@ computed: {
 
 ### 输入框的不同类型
 
-`<input type="text"/>`，`v-model` 收集的是 value 值，用户输入的就是 value 值；
 
-`<input type="radio"/>`，`v-model` 收集的是 value 值，且要给标签配置 value 值。
 
-`<input type="checkbox"/>`：
+1. `<input type="text"/>`，`v-model` 收集的是 value 值，用户输入的就是 value 值；
+2. `<input type="radio"/>`，`v-model` 收集的是 value 值，且要给标签配置 value 值。
+3. `<input type="checkbox"/>`：
 
 - 没有配置 value 属性，则收集的是 checked（勾选 or 未勾选，是布尔值）
 -   配置 value 属性:
   -  `v-model` 的初始值是非数组，则收集的是 checked（勾选 or 未勾选，是布尔值）
   -  `v-model` 的初始值是数组，则收集的的是 value 组成的数组
 
-​    
+​    4. `v-model` 的三个修饰符
 
- 备注：`v-model` 的三个修饰符
+- lazy：失去焦点再收集数据
 
-​         lazy：失去焦点再收集数据
+- number：输入字符串转为有效的数字
 
-​         number：输入字符串转为有效的数字
-
-​         trim：输入首尾空格清楚
+- trim：输入首尾空格清楚
