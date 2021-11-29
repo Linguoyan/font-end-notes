@@ -67,6 +67,11 @@ Vue 的特点
   - 双向绑定一般应用在表单输入类元素
   - `v-model:value` 默认收集的是 `value` 值，可简写为 `v-model`
 
+~~~html
+单向数据绑定：<input type="text" :value="name"><br/>
+双向数据绑定：<input type="text" v-model="name"><br/>
+~~~
+
 
 
 ## el 和 data 的写法
@@ -98,7 +103,7 @@ V：视图 View，模板
 
 VM：视图模型 ViewModel，`Vue` 实例对象
 
-![](H:\Collation\image\mvvm.png)
+![aa](https://raw.githubusercontent.com/Linguoyan/font-end-notes/main/image/mvvm.png)
 
 发现了什么？
 
@@ -308,7 +313,7 @@ computed: {
 
 计算属性最终会放入 `vm` 中，直接读取使用即可，无需添加括号。
 
-如果想修改计算属性，需通过 `setter` 函数去修改，且 `setter` 中要引起计算时依赖的数据发生改变。
+如果想修改计算属性，需通过 `setter` 函数去修改。`setter` 中要引起依赖的数据发生改变，才能出发视图更新。
 
 
 
@@ -752,7 +757,7 @@ function Observer(obj) {
 
 ​    
 
-**注意：`Vue.set()` 和 `vm.$set()` 不能给 vm 或 vm的根数据对象(vm.data)添加属性**
+**注意：`Vue.set()` 和 `vm.$set()` 不能给 vm 或 vm 的根数据对象(vm.data)添加属性**
 
 
 
@@ -775,8 +780,206 @@ function Observer(obj) {
 
 ​    4. `v-model` 的三个修饰符
 
-- lazy：失去焦点再收集数据
+- lazy：失去焦点再收集数据，避免多次出发更新
 
 - number：输入字符串转为有效的数字
 
-- trim：输入首尾空格清楚
+- trim：清除输入的首尾空格
+
+~~~html
+<form @submit.prevent="getSubmit">
+    账号：<input type="text" v-model.trim="userInfo.account"> <br/><br/>
+    密码：<input type="password" v-model="userInfo.password"> <br/><br/>
+    年龄：<input type="number" v-model.number="userInfo.age"> <br/><br/>
+    性别：
+    男<input type="radio" name="sex" v-model="userInfo.sex" value="male">
+    女<input type="radio" name="sex" v-model="userInfo.sex" value="female"> <br/><br/>
+    爱好：
+    学习<input type="checkbox" v-model="userInfo.hobby" value="study">
+    打游戏<input type="checkbox" v-model="userInfo.hobby" value="game">
+    吃饭<input type="checkbox" v-model="userInfo.hobby" value="eat">
+    <br/><br/>
+    所属校区
+    <select v-model="userInfo.city">
+        <option value="">请选择校区</option>
+        <option value="beijing">北京</option>
+        <option value="shanghai">上海</option>
+        <option value="shenzhen">深圳</option>
+        <option value="wuhan">武汉</option>
+    </select>
+    <br/><br/>
+    其他信息：
+    <textarea v-model.lazy="userInfo.other"></textarea> <br/><br/>
+    <input type="checkbox" v-model="userInfo.agree">阅读并接受<a href="...">《用户协议》</a>
+    <button>提交</button>
+</form>
+~~~
+
+~~~js
+new Vue({
+    el:'#root',
+    data:{
+        userInfo:{
+            account:'',
+            password:'',
+            age:18,
+            sex:'female',
+            hobby:[], // 初始值为数组 则收集的是 value 组成的数组
+            city:'beijing',
+            other:'',
+            agree:''
+        }
+    },
+    methods: {
+        getSubmit(){
+            console.log(JSON.stringify(this.userInfo))
+        }
+    }
+})
+~~~
+
+
+
+## 过滤器
+
+
+
+**什么是过滤器？**
+
+对要展示的数据进行一些特定的处理后再渲染，比较适用于一些简单的逻辑处理、格式化。
+
+
+
+**语法**
+
+全局注册：`Vue.filter(name, callback)`
+
+局部注册： `new Vue({filters: {...}})`
+
+
+
+在 vue 中使用：`{{ xxx | filterName }}` 或 `v-bind="xxx | filterName"`
+
+
+
+**注意：**
+
+1. 过滤器也可以接收额外参数、多个过滤器也可以串联
+
+2. 过滤器没有改变数据本身，而是返回新的对应的数据
+
+~~~html
+<!-- 过滤器实现 -->
+<h3>现在是：{{time | timeFormater}}</h3>
+<!-- 过滤器实现（传参） -->
+<h3>现在是：{{time | timeFormater('YYYY_MM_DD') | mySlice}}</h3>
+<h3 :x="msg | mySlice">filters</h3>
+~~~
+
+~~~js
+// 全局过滤器
+Vue.filter('mySlice',function(value){
+    return value.slice(0,4)
+})
+new Vue({
+    el:'#root',
+    data:{
+        time:1621561377603, //时间戳
+        msg:'你好，明'
+    },
+    // 局部过滤器
+    filters:{
+        timeFormater(value,str='YYYY年MM月DD日 HH:mm:ss'){
+            // console.log('@',value)
+            return dayjs(value).format(str)
+        }
+    }
+})
+~~~
+
+
+
+## 内置指令
+
+
+
+### v-text
+
+
+
+- 向其所在的 dom 节点渲染文本内容
+- 与插值语法的区别：`v-test` 会替换节点中的内容， `{{xx}}` 不会
+
+~~~html
+<div v-text="name"></div>
+~~~
+
+
+
+### v-html
+
+
+
+作用：向指定节点中渲染包含 html 结构的内容
+
+
+
+与插值语法的区别：
+
+- `v-html` 会替换节点中所有内容，插值语法不会
+- `v-html` 可识别 html 结构
+
+
+
+注意：
+
+- 在网站上动态渲染任意 HTML 是非常危险的，容易导致 XSS 攻击
+- 必须在可信的内容上使用 `v-html`，不要在用户提交的内容上使用
+
+
+
+### v-cloak
+
+
+
+本质是一个特殊属性，Vue 实例创建完毕并接管容器后，会删掉 `v-cloak` 属性。
+
+可使用 css 配合 `v-cloak` 解决网速慢时页面展示出 {{xxx}} 的问题。
+
+~~~html
+<style>
+	[v-cloak] {
+        display: none;
+    }
+</style>
+<div id="root">
+    <h2 v-cloak>{{name}}</h2>
+</div>
+~~~
+
+
+
+### v-once
+
+
+
+`v-once` 所在节点在初次渲染之后，就被视为静态内容。后续数据改变引起的更新也不会引起 `v-once` 所在结构的更新，用于优化性能。
+
+~~~html
+<h2 v-once>初始化的n值是:{{n}}</h2>
+<h2>当前的n值是:{{n}}</h2>
+<button @click="n++">点我n+1</button>
+~~~
+
+
+
+### v-pre
+
+
+
+作用：跳过所在节点的编译过程，可通过它跳过没有使用插值语法、指令语法等的节点，加快编译，提高效率
+
+~~~html
+<h2 v-pre>这里会被跳过</h2>
+~~~
+
