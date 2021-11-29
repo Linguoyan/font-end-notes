@@ -330,7 +330,7 @@ new Vue {
     ...
     watch: {
         isHot: {
-            immediate: true, // 吃初始化是否调用一次handler 默认false
+            immediate: true, // 初始化时是否调用一次handler 默认false
             handler(newVal, oldVal) {
                 //监听回调函数
                 ...
