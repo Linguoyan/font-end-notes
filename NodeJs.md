@@ -1,14 +1,24 @@
 # Node 本质与机制
 
+
+
 ## Node 是什么
 
+
+
 ### 概述
+
+
 
 Node 不是一门语言，也不是一个框架，而是基于 Chrome V8 引擎的 JavaScript 运行时环境；结合 libuv 拓展了 JavaScript 的功能，使其能够支持浏览器的 Dom 操作，同时具有后端语言才有 I/O，文件读写和操作数据库的能力。
 
 Node.js 最擅长处理高并发，在 Java，PHP，net 等服务端语言中，会为每个客户端连接创建一个新的线程。理论上，一台 8GB 内存的服务器可同时连接的最大用户数约为 4000 个（每个线程耗费约 2MB 内存）。想让 web 程序支持更多用户就需要增加服务器数量。Node.js 并不是为每个客户端创建一个新的线程，而是仅仅使用一个线程。当有客户端连接了，就触发一个内部事件，通过非阻塞 I/O、事件驱动机制，让 Node.js 程序在宏观上并行。使用 Node.js，一台 8GB 服务器可同时处理超过 4 万用户的连接。
 
+
+
 ### 非阻塞 I/O
+
+
 
 `I/O` 是 `input` 和 `output` 的缩写，表示计算机输入输出。
 
@@ -18,7 +28,11 @@ Node.js 最擅长处理高并发，在 Java，PHP，net 等服务端语言中，
 
 **阻塞 `I/O` 和非阻塞 `I/O` 区别就在于系统在接入输入到输出期间，能否接收其他输入。**
 
+
+
 ### 事件驱动
+
+
 
 `I/O` 操作完成后主程序是如何感知的？
 
@@ -26,7 +40,11 @@ Node.js 最擅长处理高并发，在 Java，PHP，net 等服务端语言中，
 
 `libuv` 提供两个最重要的东西是**事件循环和线程池**，两者共同构建异步非阻塞 `I/O` 模型。事件驱动是在整个非阻塞 `I/O` 中线程池通知事件循环它已经完成 `I/O` 操作的一种机制。
 
+
+
 ### 事件循环
+
+
 
 #### 六个阶段
 
@@ -37,9 +55,15 @@ Node.js 最擅长处理高并发，在 Java，PHP，net 等服务端语言中，
 - check 阶段 ：执行 setImmediate() 的回调
 - close callbacks 阶段：执行 socket 的 close 事件回调
 
+
+
 每个阶段都有一个先入先出的回调队列，事件循环运行到每个阶段，都会从该阶段的回调队列中取出函数去执行，直到队列当中的内容耗尽，或执行的回调数量达到最大。然后事件循环进入下一个阶段，然后又从下一个阶段对应的队列中取出回调函数执行，这样反复直到事件循环的最后一个阶段。而事件循环也会一个一个按照循环执行，直到进程结束。
 
+
+
 #### 宏任务和微任务
+
+
 
 宏、微任务特征：1. 是一个回调函数；2. 是异步执行的回调函数。
 
@@ -49,15 +73,27 @@ Node 端事件循环中的异步队列也是这两种：`macro`（宏任务）�
 
 常见的 micro-task：`process.nextTick`、`new Promise().then`(回调)等。
 
+
+
 **宏任务队列和微任务队列在宏观上只是个概念，在 node 中没有说哪个具体队列名字就叫宏任务队列，正确的认知应该是前面我们说的事件循环当中的 6 个阶段对应的 6 个基本的队列都属于宏队列。**
+
+
 
 事件循环当中的 6 个宏队列和微队列的关系如下：**微队列（microtask）在事件循环的各个阶段之间执行，或者说在事件循环的各个阶段对应的宏队列（macrotask）之间执行**。
 
+
+
 #### process.nextTick
+
+
 
 这个函数是独立于 `Event Loop` 之外的，它有一个自己的队列，当宏任务每个阶段完成后，在下个阶段之前（6 个阶段），如果存在 `nextTick` 队列，就会清空队列中的所有回调函数，并且**优先于其他 `microtask` 执行**。
 
+
+
 #### **整个系统的任务调度**
+
+
 
 1. 执行全局的同步代码，执行完毕之后，开启 for 循环模式；
 2. 读取全局同步代码对应的微任务队列并且执行完毕；
@@ -66,17 +102,29 @@ Node 端事件循环中的异步队列也是这两种：`macro`（宏任务）�
 5. 接着继续执行此时需要执行的宏任务；
 6. 周而复始，像一个循环一样。
 
+
+
 #### eventloop
 
-![eventloop](H:\Collation\image\eventloop.png)
+![eventloop](https://github.com/Linguoyan/font-end-notes/blob/main/image/eventloop.png?raw=true)
+
+
 
 # 核心模块
 
+
+
 ## 模块-buffer
+
+
 
 Buffer 类是作为 Node.js API 的一部分引入的，用于在 TCP 流、文件系统操作、以及其他上下文中与八位字节流进行交互。
 
+
+
 ### 核心概念
+
+
 
 #### 二进制
 
@@ -86,9 +134,13 @@ Buffer 类是作为 Node.js API 的一部分引入的，用于在 TCP 流、文�
 
 计算机将字母转换为数字的规则是通过**字符集**。
 
+
+
 #### 字符集
 
 字符集已经定义好的表示每个字符的确切数字的规则。
+
+
 
 #### 字符编码
 
@@ -107,9 +159,13 @@ Buffer 类是作为 Node.js API 的一部分引入的，用于在 TCP 流、文�
 - binary - `latin1` 的别名。
 - hex - 将每个字节编码成两个十六进制的字符。
 
+
+
 #### stream
 
 流，英文 `Stream` 是对输入输出设备的抽象，这里的设备可以是文件、网络、内存等, 而 **JavaScript 中的 Stream 只是表示随着时间的推移从一个点移动到另一个点的数据序列**。当有一些大文件操作时，我们就需要 `Stream` 像管道一样，一点一点的将数据流出。
+
+
 
 #### Buffer
 
@@ -117,11 +173,17 @@ Buffer 类是作为 Node.js API 的一部分引入的，用于在 TCP 流、文�
 
 Buffer 是一个类似于数组，默认以十六进制来保存资源在计算机当中的二进制形式。
 
+
+
 ## 模块-stream
+
+
 
 ### 什么是流？
 
 在 `node` 当中 `stream` 是一种处理流数据的抽象接口，`stream` 模块提供了一系列实现流的 API，在 `node` 当中提供了很多关于流的对象，流是可读写的，所有的流都是 `EventEmitter` 的实例。
+
+
 
 ### 为什么使用流？
 
@@ -132,6 +194,8 @@ Buffer 是一个类似于数组，默认以十六进制来保存资源在计算�
 如果不使用流呢？那就得先从服务端加载完全部的视频文件，再播放，这样导致的问题最直观就是需要很长的时间来获取视频文件。加载过程中也可能会因为内存占用过多导致系统崩溃。
 
 因为一次性读取、操作大文件，内存和网络是「吃不消」的，因此要让数据流动起来，一点一点的进行操作，数据通过管道流动给客户端，大大减轻了服务器的压力。这其实也符合算法中一个很重要的思想 —— 分而治之。
+
+
 
 ### **读取大文件**
 
@@ -166,7 +230,11 @@ const server = http.createServer(function (req, res) {
 server.listen(8000);
 ```
 
+
+
 ## 模块-fs
+
+
 
 ### 文件读取-fs.readFile
 
@@ -193,6 +261,8 @@ fs.readFile(filePath1, "utf8", function (err, data) {
 const fileResult = fs.readFileSync(filePath1, "utf8"); // this is data1
 ```
 
+
+
 ### 文件写入-fs.writeFile
 
 `fs.writeFile(filename,data,[options],callback)`
@@ -212,6 +282,8 @@ fs.writeFile(filePath, "new content..", function (err) {
   console.log("new data -->" + data);
 });
 ```
+
+
 
 ### 文件追加-fs.appendFile
 
@@ -236,6 +308,8 @@ fs.appendFile(filePath, "add content..", function (err) {
 fs.appendFileSync(filePath, "同步追加一条新数据程序员成长指北789");
 ```
 
+
+
 ### 拷贝文件-fs.copyFile
 
 `fs.copyFile(filenameA, filenameB，callback)`
@@ -248,6 +322,8 @@ fs.appendFileSync(filePath, "同步追加一条新数据程序员成长指北789
 fs.copyFileSync(filePath, filePath1);
 let data = fs.readFileSync(filePath1, "utf8");
 ```
+
+
 
 ### 删除文件-fs.unlink
 
@@ -267,7 +343,11 @@ fs.unlinkSync(filePath, function (err) {
 });
 ```
 
+
+
 ## 模块-http
+
+
 
 **创建一个后台服务**
 
@@ -278,11 +358,15 @@ const server = http.createServer((request, response) => {
 });
 ```
 
+
+
 **获取请求头 方法 访问地址**
 
 ```js
 const { header, method, url } = request;
 ```
+
+
 
 **请求体**
 
@@ -299,6 +383,8 @@ request
   });
 ```
 
+
+
 **监听错误**
 
 ```js
@@ -307,11 +393,15 @@ request.on("error", (err) => {
 });
 ```
 
+
+
 **HTTP 状态码**
 
 ```js
 response.statusCode = 404;
 ```
+
+
 
 **设置响应头**
 
@@ -329,6 +419,8 @@ response.writeHead(200, {
 });
 ```
 
+
+
 **发送返回体**
 
 ```js
@@ -342,7 +434,11 @@ response.end();
 response.end("<html><body><h1>Hello, World!</h1></body></html>");
 ```
 
+
+
 ## 核心模块-net
+
+
 
 ### TCP 协议
 
@@ -355,7 +451,11 @@ response.end("<html><body><h1>Hello, World!</h1></body></html>");
   - 第二次：接收端接收和发送正常
   - 第三次：发送端接收正常
 
+
+
 ### 使用 net 创建 TCP 链接
+
+
 
 服务端代码
 
@@ -394,6 +494,8 @@ server.on('error',err => {
 })
 ```
 
+
+
 客户端代码
 
 ```js
@@ -426,12 +528,16 @@ client.on('close',(err) => {
 })
 ```
 
+
+
 **TCP 服务事件（server）**
 
 - listening：也就是 `server.listen()`;
 - connection：新链接建立时触发，参数 `socket` 为 `net.createServer` 实例
 - close：当 `server` 关闭的时候触发（server.close()）。如果有连接存在，直到所有的连接结束才会触发这个事件
 - error：捕获错误，例如监听一个已经存在的端口就会报 `Error: listen EADDRINUSE` 错误
+
+
 
 **TCP 链接事件（socket）**
 
@@ -440,9 +546,15 @@ client.on('close',(err) => {
 - error：监听 `socket` 的错误信息
 - write：`write` 是一个方法，`write` 方法是写数据到另一端
 
+
+
 # CommonJS 模块规范
 
+
+
 ## 认识 CommonJS
+
+
 
 ### 为啥需要模块化
 
@@ -454,6 +566,8 @@ client.on('close',(err) => {
 
 CommonJS 的提出是为了解决上述两个的问题。nodejs 借鉴了 CommonJS 的 Module，实现良好的模块管理。
 
+
+
 ### CommonJS 使用场景
 
 commonjs 使用于以下几个场景
@@ -462,12 +576,16 @@ commonjs 使用于以下几个场景
 2. Browserify 是 CommonJS 在浏览器中的一种实现；
 3. webpack 打包工具对 CommonJS 的支持和转换；也就是前端应用也可以在编译之前，尽情使用 CommonJS 进行开发。
 
+
+
 ### CommonJS 特点
 
 1. commonjs 中每个 js 文件都是单独的模块，称之为 Module；
 2. commonjs 核心变量：exports、module.exports、require；
 3. exports、module.exports 负责导出；
 4. requrie 负责导入（自定义模块、系统模块、第三方模块）；
+
+
 
 ### CommonJS 实现原理
 
@@ -517,9 +635,13 @@ runInThisContext(modulefunction)(
 );
 ```
 
+
+
 ## require
 
 require 接收的唯一参数是一个**标识符**，commonjs 对不同的标识符处理不同，但目的都是为了找到相应的模块。
+
+
 
 ### requrie 加载标识符原则
 
@@ -531,9 +653,13 @@ require 接收的唯一参数是一个**标识符**，commonjs 对不同的标�
    - 沿着路径向上递归，直到根目录下的 node_modules 目录；
    - 在查找过程中，会找 package.json 下 main 属性指向的文件，如果没有 package.json ，在 node 环境下会以此查找 index.js ，index.json ，index.node。
 
+
+
 ### require 模块引入与处理
 
 commonjs 模块同步加载并执行模块文件，在执行阶段分析模块依赖，采用「**深度优先遍历**」，执行顺序：父-子-父。
+
+
 
 ### **require 加载原理**
 
@@ -542,6 +668,8 @@ commonjs 模块同步加载并执行模块文件，在执行阶段分析模块�
 module：node 中每一个 js 文件都是 module，module 除了保存 exports 信息外，还有 loaded，表示该文件是否被加载。
 
 Module：nodejs 为例，整个系统运行后，会用 Module 缓存每一个模块加载的信息。
+
+
 
 ### **require 源码**
 
@@ -570,6 +698,8 @@ function require(id) {
 }
 ```
 
+
+
 **大概流程是这样子的**
 
 - require 接收一个参数（文件标识符），分析定位文件，然后会从 Module 上查找有没有缓存，如果有缓存，那么直接返回缓存的内容。
@@ -580,11 +710,17 @@ function require(id) {
 
 - exports 和 module.exports 持有相同引用，因为最后导出的是 module.exports， 所以对 exports 进行赋值不会对 module.exports 的引用产生影响。
 
+
+
 ### **require 动态加载**
 
 require 本质上是一个函数，这就意味着 require 可以在任意上下文中执行，自由加载其他模块的属性和方法。
 
+
+
 ## exports 和 module.exports
+
+
 
 ### exports 使用
 
@@ -602,9 +738,13 @@ console.log(a);
 
 exports 就是传入到当前模块内的一个对象，本质上是 module.exports。
 
+
+
 **`exports={}`为啥不行呢？**
 
 我们知道 exports， module 和 require 是以形参的方式传入到 js 模块中。我们直接 `exports = {}` 修改 exports ，等于重新赋值了形参，将导致模块不会在引用原来的形参，这是 js 语言自身特性。应该改成 `exports.xxx=xxx`。
+
+
 
 ### **module.exports 使用**
 
@@ -620,20 +760,30 @@ module.exports = {
 };
 ```
 
+
+
 **有了 exports 为啥还要 module.exports ？**
 
 我们知道 `exports` 会被初始化成一个对象，如果我们只导出一个**类或一个函数**再或者其他属性的情况呢？
 
 这时候就可以通过 `module.exports` 自定义导出**除对象外的其他类型元素**。
 
+
+
 ## CommonJS 总结
+
+
 
 - CommonJS 模块由 JS 运行时实现。
 - CommonJs 是单个值导出，本质上导出的就是 exports 属性。
 - CommonJS 是可以动态加载的，对每一个加载都存在缓存，可以有效的解决循环引用问题。
 - CommonJS 模块同步加载并执行模块文件。
 
+
+
 ## ES Module 总结
+
+
 
 - ES6 Module 静态的，不能放在块级作用域内，代码发生在编译时。
 - ES6 Module 和 CommonJS 一样，对模块有缓存机制，处理时采用深度优先遍历。
@@ -641,9 +791,15 @@ module.exports = {
 - ES6 Module 导入模块在严格模式下。
 - ES6 Module 的特性可以很容易实现 Tree Shaking 和 Code Splitting。
 
+
+
 # 异步编程
 
+
+
 ## 异步概念
+
+
 
 在异步调用当中，我们自己是无法独自完成异步，必须依靠某个东西和我们共同完成，这就是中间人。
 
@@ -653,13 +809,21 @@ module.exports = {
 2. 发生异步交互
 3. 返回异步响应
 
+
+
 ### 浏览器中的异步
+
+
 
 浏览器当中异步模式是依赖于 `Ajax` 的，而 `Ajax` 中的核心中间人就是 `XMLHttpRequest`。
 
 `Ajax` 定义好请求和回调函数后，剩下的事情就交给 `XMLHttpRequest` 处理，`XMLHttpRequest` 会和服务器交互，并产生时间差，所以异步操作能够很好的解决问题，不需要刷新页面就能获取数据。
 
+
+
 ### node 中的异步
+
+
 
 `Node ` 中异步模式是依赖于异步非阻塞 I/O 模型的，而这种模型中的核心，或者核心中间人就是 `EventLoop`。
 
@@ -667,7 +831,11 @@ module.exports = {
 
 `V8` 引擎直到异步函数执行完成才会开始处理 `EventLoop` ，这意味着 `JavaScript` 代码不是多线程的，即使好像看起来能同时执行多个线程的任务。
 
+
+
 ### 异步的优缺点
+
+
 
 同步方式容易理解，但会造成线程阻塞，无法最大限度的利用系统资源。
 
@@ -675,13 +843,21 @@ module.exports = {
 
 异步最大的问题是**可控性**问题，如执行结果不是我们想要的，该怎么去控制？因为异步执行的结果具有**不确定性**。
 
+
+
 ## node 自带的异步
+
+
 
 `node` 中有两种事件处理的方式，分别是 `callback`（回调）和 `EventEmitter`（事件发射器）。
 
 `callback` 采用的是错误优先的回调方式，`EventEmitter` 采用的是事件驱动当中的事件发射器。
 
+
+
 ### 1.callback
+
+
 
 `callback` 采用错误优先的回调方式，注意两条规则即可：
 
@@ -709,7 +885,11 @@ function interview(callback) {
 }
 ```
 
+
+
 **callback 存在的问题**
+
+
 
 **1.容易产生回调地狱**
 
@@ -737,13 +917,19 @@ interview(function (err, res) {
 });
 ```
 
+
+
 **2.异步并发控制**
 
 比如同时面试两家公司，那么就需要写两个 `interview` 函数来进行控制。
 
+
+
 **3.社区解决方案**
 
 npm：async.js
+
+
 
 ### 2.EventEmitter
 
@@ -768,7 +954,11 @@ function main() {
 main(); // start; topic has occured ; end
 ```
 
+
+
 ## Promise
+
+
 
 `Promise` 可以说是对回调地狱的思考和解决方案，是在 `Async-Await` 出现之前唯一普遍的通用规范。
 
@@ -784,7 +974,11 @@ main(); // start; topic has occured ; end
 - 如果回到函数结果是 `return`，该 `Promise` 是 `resolve` 状态；
 - 如果回调函数最终返回一个 `promise`，该 `promise` 会和回调函数 `return` 的 `promise` 状态保持一致
 
+
+
 ## async -await
+
+
 
 async await 是 Promise 的语法糖，返回结果都是 Promise
 
@@ -800,6 +994,8 @@ var promise = function () {
 }
 // Promise {4}
 ```
+
+
 
 异步编程的终极解决方案：以同步的方式写异步
 
@@ -824,6 +1020,8 @@ setTimeout(() => {
 // 6   Promise {4}
 ```
 
+
+
 多个任务并发控制
 
 ```js
@@ -837,6 +1035,8 @@ try {
 console.log("smile");
 ```
 
+
+
 并行的异步任务控制
 
 ```js
@@ -847,13 +1047,21 @@ try {
 }
 ```
 
+
+
 # koa 与 express
+
+
 
 ## koa
 
 基于 Node.js 的 HTTP 的中间件框架。
 
+
+
 ### 基础用法
+
+
 
 **创建 HTTP 服务**
 
@@ -862,6 +1070,8 @@ const Koa = require("koa");
 const app = new Koa();
 app.listen(3000);
 ```
+
+
 
 **Context 对象**
 
@@ -876,6 +1086,8 @@ app.use((ctx) => {
 app.listen(3000);
 ```
 
+
+
 **Response 类型**
 
 ```js
@@ -883,6 +1095,8 @@ app.use((ctx) => {
   ctx.type = 200;
 });
 ```
+
+
 
 **网页模板**
 
@@ -895,7 +1109,11 @@ app.use((ctx) => {
 });
 ```
 
+
+
 ### 路由
+
+
 
 通过 `ctx.path` 可以获取用户请求的路径，由此实现简单的路由。
 
@@ -909,6 +1127,8 @@ app.use((ctx) => {
   }
 });
 ```
+
+
 
 **koa-router 模块**
 
@@ -925,6 +1145,8 @@ app.use(route.get("/", main));
 app.use(route.get("/about", about));
 ```
 
+
+
 **静态资源**
 
 如果网站提供静态资源（图片、字体、样式表、脚本等），为它们一个个写路由就很麻烦，也没必要。`koa-static` 模块封装了这部分的请求。
@@ -936,6 +1158,8 @@ const static = require("koa-static");
 app.use(static(path.join(__dirname)));
 ```
 
+
+
 **重定向**
 
 ```js
@@ -946,7 +1170,11 @@ const redirect = (ctx) => {
 app.use(route.get("/redirect", redirect));
 ```
 
+
+
 ### 中间件
+
+
 
 我们每次使用 `app.use` 就是在使用一个中间件，中间件的本质是一个 `async` 修饰的函数，所以返回的是个 `Promise` 对象。
 
@@ -976,7 +1204,11 @@ app.listen(3000);
 // 1 -> 3 -> 5 -> 4 -> 2
 ```
 
+
+
 ### 错误处理
+
+
 
 **500 错误**
 
@@ -984,11 +1216,15 @@ app.listen(3000);
 ctx.throw(500);
 ```
 
+
+
 **404 错误**
 
 ```js
 ctx.status = 404;
 ```
+
+
 
 **处理错误中间件**
 
@@ -1014,13 +1250,21 @@ app.use(handler);
 app.use(main);
 ```
 
+
+
 # 性能调优
 
+
+
 ## http 服务器性能检测
+
+
 
 ### **1.压测工具**
 
 ab(Apache bench)
+
+
 
 ### **2.压测过程**
 
@@ -1036,6 +1280,8 @@ ab(Apache bench)
 - Time per request：单个用户请求一次的平均时间
 - Transfer rate：传输速率，或者吞吐量（有多少数据量的交互）
 
+
+
 ### **3.服务器性能瓶颈猜测**
 
 服务器的性能瓶颈主要和 CPU、硬盘、网卡有关。可以通过 linux 配合压力测试，找出限制服务器性能的原因。
@@ -1045,7 +1291,11 @@ ab(Apache bench)
 
 基本上在服务器确定的情况下，我们大部分问题其实是我们书写的 `Node-BFF` 层，而且就在 cpu 运算上。
 
+
+
 ## Node 性能分析与优化
+
+
 
 ### 1.profile 工具
 
@@ -1053,7 +1303,11 @@ ab(Apache bench)
 - 执行压测 15 秒的命令 `ab -c50 -t15 http...` 在 `isolate-xxx-v8.log` 文件中生成内容
 - `node --prof-process isolate-xxx-v8.log > profile.txt` 将 log 文件中的东西进行分析，生成 `profile.txt` 文件
 
+
+
 ### 2.Chrome devtool
+
+
 
 **CPU 检测**
 
@@ -1064,11 +1318,15 @@ ab(Apache bench)
 - 执行 `ab -c50 -t15 http://localhost:3000/download/`，开始 15 秒的压测
 - 然后回到 `Profiler` 的当中点击 `stop` 的按钮，就能根据从上到下的耗时去优化
 
+
+
 **计算性能优化本质**
 
 - 减少不必要计算：如把小图合成大图，减少 http 的请求次数，减少 tcp 断链、http 编解包和图片编码的消耗
 - 空间换时间：比如把一些需要重复进行计算的结果缓存起来，在下次计算就能直接使用计算结果，达到性能优化
 - 提前计算：尽可能把服务阶段的计算量移到启动阶段，就能够达到不错的优化效果
+
+
 
 **内存检测**
 
@@ -1081,28 +1339,44 @@ ab(Apache bench)
 - 然后点击 `Comparison `来对比两次快照的变化，通过观察 `Alloc.Size` 和 `Freed.Size` 的差值看到`Size Delta`，观察内存是否存在泄露
 - 如果 `snaphot1` 和 `snaphot2` 差距比较大（snapshot1<snapshot2），说明内存没有得到释放，是存在内存泄漏的。
 
+
+
 **内存性能优化实现**
 
 - 减少内存使用
 - 必要时检查内存是否泄露
 
+
+
 NodeJS Buffer 的内存分配策略：当创建第一个 buffer，node 会去创建一个 chart 数组，如果 buffer 小于 8kb，那么 node 会将该 buffer 填充到 chart 里面，后面有新的 buffer 创建就会自动填充到 chart；如果 buffer 被销毁了，那么在 chart 占据的空间则会腾出来给下一个新的 buffer 使用，一点也不会浪费空间，以达到对内存充分的使用，最大程度减少内存消耗。这个思想和「**池**」一样的。
 
 所以，节省内存最好的方式是：**使用池**
 
+
+
 ## 内存管理优化
 
+
+
 ### 垃圾回收机制
+
+
 
 #### 什么是 GC？
 
 程序工作过程中会产生很多垃圾，这些垃圾是程序不用的内存，而 `GC` 就是负责回收垃圾的。
 
+
+
 #### 垃圾产生&为何回收
 
 我们写代码时创建一个基本类型、对象、函数等都是需要占用内存的。举个例子，我们声明了一个变量 `test`，它引用了对象 `{name: 'isboyjc'}`，接着我们把这个变量重新赋值了一个数组对象，那么之前的对象引用关系就没有了。这些无用的对象多了就会占用大量的内存空间，所以需要被清理。
 
+
+
 #### 垃圾回收策略
+
+
 
 ##### 标记清除法
 
@@ -1121,11 +1395,17 @@ NodeJS Buffer 的内存分配策略：当创建第一个 buffer，node 会去创
 
 缺点：清除之后，原本对象所占用的内存位置是不变的，导致内存空间不连续，出现内存碎片。
 
+
+
 **标记整理法**解决内存碎片的问题：
 
 即在标记结束后，标记整理算法会将存活着的对象内存向一端移动，最后清理掉边界内存，使剩余内存空间可连续。
 
+
+
 #### V8 对 GC 的优化
+
+
 
 ##### 分代式垃圾回收
 
@@ -1136,6 +1416,8 @@ V8 的垃圾回收策略主要基于分代式垃圾回收机制，V8 将堆内�
 而把一些大、老、存活时间长的对象作为老生代，垃圾清理频率较低；
 
 新老生代的回收机制及频率是不同的，提高了垃圾回收机制的效率。
+
+
 
 **新生代垃圾回收**
 
@@ -1153,21 +1435,31 @@ V8 的垃圾回收策略主要基于分代式垃圾回收机制，V8 将堆内�
 
 当一个对象经过多次复制后依然存活，说明是生命周期较长的对象，会被移动到老生代中
 
+
+
 **老生代垃圾回收**
 
 采用**标记清除法**对老生代垃圾进行回收，采用**标记整理法**对回收机制进行优化，使内存空间变得可连续。
 
+
+
 ## 多进程优化
+
+
 
 ### 什么是进程和线程？
 
 由于 JavaScript 是单线程语言，因此无法在其中实现多线程。在这种情况下，有一个很好的解决方法：通过 Node.js 实现多线程。
+
+
 
 **什么是进程？**-- 类似公司
 
 - 操作系统挂载的运行程序的单元
 
 - 拥有一些独立的资源，如内存等
+
+
 
 **什么是线程？**-- 类似职员
 
@@ -1179,7 +1471,11 @@ V8 的垃圾回收策略主要基于分代式垃圾回收机制，V8 将堆内�
 - 主线程运行 v8 与 javascript
 - 多个子线程(libuv 提供)提供给事件循环调度
 
+
+
 如何理解：主线程相当于公司里面的的老板，其他子线程相当于公司职员，js 主线程老板通过事件循环给其他线程员工分发任务。但这种机制也存在缺陷，即当老板的事情很多，而且 js 主线程只有一个线程，也只能用到 cpu 一个核。这会造成 cpu 的浪费，所以`node`提供了子进程和子线程，让其在别的`cpu`上也跑一个`javascript`环境。这种情况就相当于一个集团有多个子公司（cpu），每个子公司（单线程）可分配多名员工（子线程）执行工作。
+
+
 
 **子进程的创建和使用**
 
@@ -1204,9 +1500,15 @@ process.on("message", (str) => {
 });
 ```
 
+
+
 ### cluster 模块
 
+
+
 `cluster` 内置模块是 `Node` 官方特地为了网络服务而设计的，通过它我们可以快速的创建一个多核能力的网络服务程序。
+
+
 
 如果计算机是 4 核的，那么我们可以选一个来创建主进程，将另外 3 个来创建子进程，利用进程之间强大的通信能力，主进程就啥事也不用做，只需要把任务发送给各个子进程，子进程完成请求后返回结果给主进程。如果要这么做的话，那么我们需要手动创建子进程和任务分发吗？答案是不用的，node 内置模块 `cluster` 可以帮助我们完成这些事。
 
@@ -1288,21 +1590,31 @@ if (cluster.isMaster) {
 }
 ```
 
+
+
 ## 架构优化
+
+
 
 ### 动静分离
 
 网页内容是分为静态和动态内容两个部分。将两种不同的文件分开部署，称为**动静分离**。
+
+
 
 **静态内容**
 
 - 基本不会变动（样式文件、图片），也不会因为请求参数不同而发生变化
 - 解决：CDN （全国各地的 CDN 网络节点中选择一个最近的）分发，HTTP 缓存（CDN 上缓存副本）等
 
+
+
 **动态内容**
 
 - 各种因为请求参数不同而变动，且变动的数量几乎不可枚举（不能使用缓存）
 - 解决：用大量的源站（相对 CDN，内容来源站点）机器承载，结合反向代理进行负载均衡
+
+
 
 #### **nginx 静态内容服务**
 
@@ -1331,6 +1643,8 @@ user root; // root 用户创建，这里修改为 root，避免没有权限访�
 nginx -s reload
 ```
 
+
+
 **nginx 输出与 nodejs 输出对比**
 
 ```js
@@ -1357,9 +1671,13 @@ ab -c 400 -n1600 http://127.0.0.1:80/index.html
 
 根据结果，可以看出使用 `nginx` 测试的 `QPS` 几乎是爆炸式输出，且吞吐量跑满整个网卡（瓶颈等于网络带宽量），**nginx 输出效率更高**。
 
+
+
 #### 动态内容架构优化
 
 主要体现在**反向代理**和**缓存服务**的使用。将请求分发到不同的 node 服务。
+
+
 
 **nginx 反向代理**
 
@@ -1381,6 +1699,8 @@ node index.js
 
 nginx 接收到 url，进行匹配处理后转发给 nodejs，这样 nodejs 就不需要解析路径了。
 
+
+
 **负载均衡**
 
 ```js
@@ -1401,6 +1721,8 @@ nginx -s reload
 ```
 
 重复刷新浏览器，发现浏览器会随机返回 3000 或者 3001 端口的文件内容，说明 `nginx` 把反向代理轮流代理到 3000 或 3001 端口的这两个 node 服务器。
+
+
 
 **redis 缓存优化**
 

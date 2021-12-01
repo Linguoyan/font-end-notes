@@ -25,10 +25,6 @@ Vue 的特点
 
 
 
-强制刷新 ctrl+shift+R shift+F5
-
-
-
 ### 创建 Vue 实例
 
 1. 使用 vue 必须创建一个 vue 实例，并传入配置对象
@@ -41,7 +37,7 @@ Vue 的特点
 5. 真实开发中只有一个 vue 实例
 6. `{{ expression }}` 双花括号里只能放 js 表达式（表达式即会产生一个值）
 7. `data` 中数据有变化，将触发模板中对应的数据
-8. 开发版 vue 会提示错误，生产版本 vue 不会，版本要对应环境
+8. 开发版 vue 会提示错误，生产版本 vue 不会， `Vue.config.productionTip = false` 可解决
 
 
 
@@ -62,7 +58,7 @@ Vue 的特点
 
 
 
-- 单向数据绑定 `v-bind`：数据单向流动，`data` 流向页面；
+- 单向数据绑定 `v-bind`：数据单向流动，`data` 流向页面，简写 `:value`；
 - 双向数据绑定 `v-model`：数据双向流动
   - 双向绑定一般应用在表单输入类元素
   - `v-model:value` 默认收集的是 `value` 值，可简写为 `v-model`
@@ -125,7 +121,7 @@ Object.defineProperty(person, "age", {
     writable: true, // 属性是否可修改 默认false
     configurable: true, // 属性是否可删除 默认false
 });
-
+...
 Object.defineProperty(person, "age", {
     // 当读取age属性时，getter函数会被调用，函数返回值是age的值
     get() {
@@ -169,9 +165,9 @@ Object.defineProperty(obj2, "x", {
 - 优点：更方便操作 `data` 中的数据
 - 原理：
   - `Object.defineProperty()` 把 `data` 对象中所有属性添加到 `vm` 上 
-  - 为每个添加到 `vm` 上的属性指定 `getter/setter` 操作
+  - 为 `vm` 上的每个属性指定 `getter/setter` 操作
   - 通过 `getter/setter` 去操作（读/写）`data` 中对应属性
-  - `_data` 做数据劫持，监听数据变化，触发页面更新
+  - `_data` 做数据劫持，监听数据变化，从而触发关联的组件重新渲染
 
 
 
@@ -195,15 +191,16 @@ Object.defineProperty(obj2, "x", {
 
 
 
-- `prevent`：阻止默认事件（常用）
 - `stop`：阻止事件冒泡（常用）
+
+- `prevent`：阻止默认事件（常用）
 - `once`：事件只触发一次（常用）
 - `capture`：使用事件的捕获模式
 - `self`：当 `event.target` 是当前 self 指定元素时才触发
 - `passive`：事件默认行为立即执行，无需等待回调函数执行完成
 
 ~~~html
-<!-- 事件捕获：默认先处理冒泡事件后捕获(info2->info2) capture 即先捕获后冒泡(info->info2) -->
+<!-- 事件捕获：默认先处理冒泡事件后捕获(info2->info) capture 即先捕获后冒泡(info->info2) -->
 <div class="capture1" @click.capture="showInfo">
     div1
 	<div class="capture2" @click="showInfo2">div2</div>
@@ -220,7 +217,7 @@ Object.defineProperty(obj2, "x", {
 `scroll` 事件和 `wheel` 事件的区别：
 
 - 两者都是监听页面滚动的事件
-- `scroll` 事件在拖动滑块或鼠标滚轮滚动时都会被触发 `wheel` 事件仅在滚轮滚动时触发
+- `scroll` 事件在拖动滑块或鼠标滚轮滚动时都会被触发，`wheel` 事件仅在滚轮滚动时触发
 - 拖动到底部继续滚动，`scroll` 事件不再触发，`wheel` 事件依然被触发
 - `scroll` 事件无需等待回调函数执行完成，立即执行
 - `wheel` 事件需等待回调函数执行完成后才响应，容易造成页面卡顿，可结合 `passive` 修饰符解决
@@ -248,7 +245,7 @@ Object.defineProperty(obj2, "x", {
 注意：
 
 1. Vue 没有提供其他按键的别名，可以通过 `e.key` 获取，单词组合需转换为 `caps-lock` (短线小写命名)
-2. 特殊修饰键：`ctrl` `alt` `shift` `meta(window)`，需配合 `keydown` 才能正常触发
+2. 系统修饰键：`ctrl`、`alt`、`shift`、`meta(window)`，配合 `keydown` 才能正常触发
 3. 也可使用 `keyCode` 指定具体按键，官方不推荐
 4. 可通过 `Vue.config.keyCodes.自定义键名 = 键码` 指定按键名
 5. 可以连写，如 `@keyup.ctrl.y` 表示同时按下 `crtl` 和 `y` 键触发
@@ -256,6 +253,10 @@ Object.defineProperty(obj2, "x", {
 
 
 ## 属性计算-computed
+
+
+
+设计初衷是用于简单运算，在模板中放太多逻辑运算会导致模板过重且难以维护。
 
 
 
@@ -306,6 +307,14 @@ computed: {
 初次读取只执行一次，后续直接读取缓存。
 
 当依赖的数据更新时将再次被调用。
+
+
+
+**computed vs methods**
+
+computed 基于响应式依赖进行缓存，只有依赖的数据发生变化才会重新计算求值
+
+相比之下，每次触发过更新渲染都会调用 methods 函数
 
 
 
@@ -983,3 +992,242 @@ new Vue({
 <h2 v-pre>这里会被跳过</h2>
 ~~~
 
+
+
+## 自定义指令
+
+
+
+**语法**
+
+~~~js
+// 局部指令
+new Vue({
+    directives: {
+        xxx: Object/callback
+    }
+})
+
+// 全局指令
+Vue.directive(xxx: Object/callback)
+~~~
+
+
+
+**指令配置对象的三个回调**
+
+~~~js
+new Vue({
+    directives: {
+        xxx: {
+            // 指令与元素成功绑定时（初始化）
+			bind(element,binding){
+				element.value = binding.value
+			},
+			// 指令所在元素被插入页面时
+			inserted(element,binding){
+				element.focus()
+			},
+			// 指令所在的模板被重新解析时(更新)
+			update(element,binding){
+				element.value = binding.value
+			}
+        }
+    }
+})
+~~~
+
+
+
+**注意事项**
+
+1. 指令定义时不加 v-，但使用时要加 v-
+
+2. 指令名如果是多个单词，要使用 kebab-case 命名形式，不要用 camelCase(驼峰式) 命名
+
+
+
+## 生命周期
+
+
+
+![vue生命周期](https://github.com/Linguoyan/font-end-notes/blob/main/image/vue-life-cycle.png?raw=true)
+
+**常用的生命周期钩子**
+
+- mounted：发送 `ajax` 请求、启动定时器、绑定自定义事件、订阅消息等「初始化操作」
+- beforeDestroy：清除定时器、解绑自定义事件、取消订阅消息等「收尾工作」
+
+
+
+**Vue 实例的销毁**
+
+- 销毁后在开发者工具 vue 看不到任何信息
+- 销毁后自定义事件会失效，但原生 DOM(如点击) 事件依然有效
+- 一般不在 `beforeDestroy` 操作数据，因为即便操作数据，也不会再触发更新流程
+
+
+
+## 非单文件组件
+
+
+
+**组件定义**
+
+组件：现实应用中局部功能代码和资源的集合
+
+非单文件组件：单个文件包含 n 组件
+
+单文件组件：一个文件中只有1个组件
+
+
+
+**组件使用的3个步骤**
+
+1. 定义组件（创建组件）
+2. 注册组件
+3. 使用组件（组件标签）
+
+
+
+**定义组件**
+
+使用 `Vue.extend(options)` 创建
+
+注意事项
+
+1. el 不要写 —— 最终所有的组件都要归于 vm 管理，vm 的 el 决定使用哪个容器
+
+2. data 必须写成函数 —— 避免组件被复用时，数据存在引用关系
+
+3. 可使用 template 配置组件结构
+
+~~~js
+const school = Vue.extend({
+    template: `
+				<div class="demo">
+					...
+				</div>
+			`,
+    data() {},
+    methods: {},
+});
+~~~
+
+
+
+
+
+**注册组件**
+
+~~~js
+// 局部注册
+new Vue({
+    components: {
+        hello: A
+    },
+});
+
+// 全局注册
+Vue.component("hello", A);
+~~~
+
+
+
+**组件名写法**
+
+- 一个单词组成：
+  -  写法1 (首字母小写)：school
+  -  写法2 (首字母大写)：School
+- 多个单词组成：
+  -  写法1 (kebab-case命名)：my-school
+  -  写法2 (CamelCase命名)：MySchool (需要Vue脚手架支持)
+
+
+
+**组件标签**
+
+写法1：`<school></school>`
+
+写法2：`<school/>` 需脚手架支持
+
+
+
+**简写**
+
+`const school = Vue.extend(options)` 可简写为 `const school = options`
+
+~~~js
+//定义组件
+const s = {
+    // 定义组件名称
+    name: "atguigu",
+    template: `...`,
+    data() {...},
+};
+
+new Vue({
+    el: "#root",
+    data: {...},
+    components: {
+        school: s,
+    },
+});
+~~~
+
+
+
+**组件嵌套**
+
+~~~js
+// 定义student组件
+const student = Vue.extend({
+    template: `...`,
+    data() {},
+});
+
+// 定义school组件
+const school = Vue.extend({
+    name: "school",
+    template: `...`,
+    data() {},
+    components: {
+        student,
+    },
+});
+
+//定义app组件
+const app = Vue.extend({
+    template: `
+				<div>	
+					<hello></hello>
+					<school></school>
+				</div>
+			`,
+    components: {
+        school,
+        hello,
+    },
+});
+
+new Vue({
+    template: "<app></app>",
+    el: "#root",
+    components: { app },
+});
+~~~
+
+
+
+**关于VueComponent**
+
+
+
+- 组件本质上是一个名为 VueComponent 的构造函数，通过 `Vue.extend` 生成的
+- 我们只需编写 `<school></school>`，Vue 解析时会帮我们创建组件的实例对象，即执行 `new VueComponent(options)`
+- 每次调用 `Vue.extend`，返回的是一个全新的 VueComponent
+- 关于 this 指向：
+  - 组件配置中 data 函数、methods、watch、computed 的函数的 `this` 为 VueComponent 实例对象
+  - new Vue(options) 配置中的函数的 `this` 为 `vm` 实例对象
+
+- VueComponent 的实例简称 vc；Vue 的实例简称 vm
