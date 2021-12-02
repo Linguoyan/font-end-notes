@@ -754,9 +754,10 @@ function Observer(obj) {
 
 
 1. vue 会监视 data 中所有层次的数据。
-2. 如何监测对象中的数据：通过 `setter` 实现监视，且要在 new Vue 时就传入要监测的数据
+2. 监测对象中的数据是通过 `setter` 实现监视，且要在 new Vue 时就传入要监测的数据
    1. 向对象添加的属性，Vue 默认不做响应式处理
-   2. 如果需给添加对象的属性做响应式，可使用如下API：`Vue.set(target，propertyName/index，value)` 或 `vm.$set(...)`
+   2. 如果需给添加对象的属性做响应式，可通过：`Vue.set(target，propertyName/index，value)` 或 `vm.$set(...)` 
+   2. 为已有对象添加多个属性可通过：`Object.assign({}, this.Object, {...})`
 3. 如何监测数组中的数据：通过重写数组更新元素的方法，本质就是做了两件事：
    1. 调用原生对应的方法对数组进行更新
    2. 重新解析模板，触发更新
@@ -1068,7 +1069,31 @@ new Vue({
 
 
 
-## 非单文件组件
+# 组件化
+
+
+
+## 模块化与组件化
+
+
+
+**模块化**
+
+模块：向外提供特定功能的 js 程序或集合，通常是一个 js 文件。以模块导出就是模块化。
+
+作用：复用 js，提高效率
+
+
+
+**组件化**
+
+组件：现实应用中局部功能代码和资源的集合。多组件方式编写，实现多组件应用。
+
+组件分为单文件和非单文件
+
+
+
+## 组件编写
 
 
 
@@ -1076,7 +1101,7 @@ new Vue({
 
 组件：现实应用中局部功能代码和资源的集合
 
-非单文件组件：单个文件包含 n 组件
+非单文件组件：单个文件包含 n 组件，所以样式尽量不跟着组件走，容易混乱
 
 单文件组件：一个文件中只有1个组件
 
@@ -1090,7 +1115,7 @@ new Vue({
 
 
 
-**定义组件**
+**1.定义组件**
 
 使用 `Vue.extend(options)` 创建
 
@@ -1116,9 +1141,7 @@ const school = Vue.extend({
 
 
 
-
-
-**注册组件**
+**2.注册组件**
 
 ~~~js
 // 局部注册
@@ -1219,7 +1242,7 @@ new Vue({
 
 
 
-**关于VueComponent**
+## **VueComponent**
 
 
 
@@ -1229,5 +1252,92 @@ new Vue({
 - 关于 this 指向：
   - 组件配置中 data 函数、methods、watch、computed 的函数的 `this` 为 VueComponent 实例对象
   - new Vue(options) 配置中的函数的 `this` 为 `vm` 实例对象
-
 - VueComponent 的实例简称 vc；Vue 的实例简称 vm
+
+
+
+**一个重要的内置关系**
+
+- `VueComponent.prototype.__proto__ === Vue.prototype`
+
+- 原因：让组件实例对象（vc）可以访问到 Vue 原型上的属性、方法
+
+  
+
+  
+
+# Vue-Cli
+
+
+
+## Cli 核心
+
+
+
+### 不同版本的 Vue
+
+Q：为啥在 `main.js` 用 `components` 写法注册组件会失败？
+
+A：脚手架引入的 vue 是`vue.runtime.xxx.js`，没有模板解析器。
+
+
+
+- vue.js 与 vue.runtime.xxx.js 区别
+  - vue.js 是完整版的 Vue，包含：核心功能 + 模板解析器。
+  - vue.runtime.xxx.js 是运行版的 Vue，只包含：核心功能；没有模板解析器。
+- 原因：vue.runtime.xxx.js 没有模板解析器，是为了减少打包体积。
+- 所以不能使用 template 这个配置项，需要使用 render 接收 createElement 函数去指定渲染内容。
+
+~~~js
+// h: CreateElement(tag?: string | Component)
+new Vue({
+  render: (h) => h("h2", "hello vue"),
+}).$mount("#app");
+~~~
+
+
+
+### vue.config.js配置文件
+
+1. 使用 `vue inspect > output.js` 可以查看到 Vue 脚手架的默认配置。
+2. 创建 vue.config.js 文件可对脚手架进行个性化定制，详情见：https://cli.vuejs.org/zh
+
+
+
+### ref属性
+
+1. 用来获取元素或子组件的引用信息
+2. 应用在 html 标签上获取的是真实 DOM 元素，应用在组件标签上是组件实例对象（vc）
+3. 使用方式：
+   1. 打标识：`<h1 ref="xxx">.....</h1>` 或 `<School ref="xxx"></School>`
+   2. 获取：`this.$refs.xxx`
+
+
+
+### props配置项
+
+1. 功能：让组件接收外部传过来的数据
+
+2. 传递数据：`<Demo name="xxx"/>`
+
+3. 接收数据方式：
+
+   1. 第一种方式（只接收）：`props:['name']`
+
+   2. 第二种方式（限制类型）：`props:{ name:String }`
+
+   3. 第三种方式（限制类型、限制必要性、指定默认值）：
+
+      ```js
+      props:{
+      	name:{
+              type:String, //类型
+              required:true, //必要性
+              default:'老王' //默认值
+      	}
+      }
+      ```
+
+   > 备注：props 是只读的，Vue 底层会监测你对 props 的修改，如果进行了修改，就会发出警告。若业务需求确实需要修改，那么请复制 props 的内容到 data 中一份，然后去修改 data 中的数据。
+
+父组件传值时要注意用 v-bind 绑定的是表达式，否则一律当作字符串处理。
