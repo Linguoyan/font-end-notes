@@ -9,15 +9,12 @@
 ### 什么是 Vue？
 
 - 一套拥有构建用户界面的渐进式 JavaScript 框架。
-
 - 简单应用：只需一个轻量小巧的核心库。
-
 - 复杂应用：可以引入各式各样的 Vue 插件。
 
 
 
-
-Vue 的特点
+### Vue 的特点
 
 1. 采用组件化模式，提高代码复用率、让代码更易于维护。
 2. 声明式编码，无需直接操作 dom，提高开发效率。
@@ -43,8 +40,6 @@ Vue 的特点
 
 ## 模板语法（两大类）
 
-
-
 - 插值语法
   - 解析标签体（开始标签和结束标签中间放的就是标签体）内容
   - 如语法 `{{ xxx }}`，`xxx` 为 js 表达式
@@ -55,8 +50,6 @@ Vue 的特点
 
 
 ## 数据绑定（两种方式）
-
-
 
 - 单向数据绑定 `v-bind`：数据单向流动，`data` 流向页面，简写 `:value`；
 - 双向数据绑定 `v-model`：数据双向流动
@@ -72,14 +65,10 @@ Vue 的特点
 
 ## el 和 data 的写法
 
-
-
 el 的两种写法：
 
 1. `new Vue` 里配置 `el` 属性
 2. 先创建 Vue 实例，随后用 `vm.$mount()` 挂载根节点
-
-
 
 data 的两种写法：
 
@@ -90,8 +79,6 @@ data 的两种写法：
 
 
 ## MVVM 模型
-
-
 
 M：模型 Model，对应 `data` 中的数据
 
@@ -109,8 +96,6 @@ VM：视图模型 ViewModel，`Vue` 实例对象
 
 
 ## 数据代理
-
-
 
 ### Object.defineProperty()
 
@@ -138,8 +123,6 @@ Object.defineProperty(person, "age", {
 
 ### 什么是数据代理？
 
-
-
 通过一个对象代理对另一个数据对象的属性操作（读/写）
 
 ~~~js
@@ -159,8 +142,6 @@ Object.defineProperty(obj2, "x", {
 
 ### Vue 中的数据代理
 
-
-
 - 通过 `vm` 对象来代理 `data` 对象中属性的操作（读/写）
 - 优点：更方便操作 `data` 中的数据
 - 原理：
@@ -177,8 +158,6 @@ Object.defineProperty(obj2, "x", {
 
 ### 基本使用
 
-
-
 - 使用 `v-on:xxx` 或 `@xxx` 绑定事件，`xxx` 是事件名
 - 事件的回调函数配置在 `methods` 中，最终挂载到 `vm` 上
 - `methods` 中配置的函数不可使用箭头函数，否则 `this` 就不会指向 `vm` 了
@@ -188,8 +167,6 @@ Object.defineProperty(obj2, "x", {
 
 
 ### 事件的修饰符
-
-
 
 - `stop`：阻止事件冒泡（常用）
 
@@ -212,8 +189,6 @@ Object.defineProperty(obj2, "x", {
 </div>
 ~~~
 
-
-
 `scroll` 事件和 `wheel` 事件的区别：
 
 - 两者都是监听页面滚动的事件
@@ -225,8 +200,6 @@ Object.defineProperty(obj2, "x", {
 
 
 ### 键盘事件
-
-
 
 常用按键名：
 
@@ -240,8 +213,6 @@ Object.defineProperty(obj2, "x", {
 - 左：`left`
 - 右：`right`
 
-
-
 注意：
 
 1. Vue 没有提供其他按键的别名，可以通过 `e.key` 获取，单词组合需转换为 `caps-lock` (短线小写命名)
@@ -253,8 +224,6 @@ Object.defineProperty(obj2, "x", {
 
 
 ## 属性计算-computed
-
-
 
 设计初衷是用于简单运算，在模板中放太多逻辑运算会导致模板过重且难以维护。
 
@@ -314,7 +283,7 @@ computed: {
 
 computed 基于响应式依赖进行缓存，只有依赖的数据发生变化才会重新计算求值
 
-相比之下，每次触发过更新渲染都会调用 methods 函数
+相比之下，methods 里的函数在每次重新渲染时都会被触发
 
 
 
@@ -334,7 +303,6 @@ computed 基于响应式依赖进行缓存，只有依赖的数据发生变化�
 
 - 当监视的属性（必须存在）发生变化时，回调函数自动调用，并进行相关处理。
 
-  
 
 属性监视的两种写法
 
@@ -367,8 +335,6 @@ vm.$watch("isHot", {
 
 ### 深度监视
 
-
-
 - Vue 中的 `watch` 默认使用浅对比监测对象内部属性的变化（一层）
 - 设置配置项 `deep: true` 可深度对比监测对象内部属性的变化（多层级）
 - 监测单个属性可通过 `"obj.xxx"` 
@@ -389,8 +355,6 @@ watch {
 
 
 
-
-
 **注意事项**
 
 - Vue 自身可以监测对象内部属性的改变，但 Vue 提供的 watch 默认不可以
@@ -399,8 +363,6 @@ watch {
 
 
 **简写形式**
-
-
 
 当只需要用到 `handler` 函数，无需用到其他配置项，就能使用简写：
 
@@ -419,8 +381,6 @@ vm.$watch('isHot', function(newVal, oldVal) {
 
 
 ### computed vs watch
-
-
 
 - `computed` 能实现的功能 `watch` 也能实现
 - `watch` 能实现的功能 `computed` 不一定能，比如异步操作
@@ -497,8 +457,6 @@ data {
 
 ## 条件渲染
 
-
-
 `v-if`：判断结果为 `flase` 直接删除 dom 节点，适用于切换频率比较低的场景，影响性能。可以配合 `v-else-if` `v-else` 使用，提高效率。但前提是不被其他节点打断。
 
 ~~~html
@@ -512,16 +470,12 @@ data {
 <div v-else-if="n === 3">Vue</div>
 ~~~
 
-
-
 `v-show`：通过样式控制节点是否展示，适用于切换频率较高的场景。
 
 ~~~html
 <div v-show="false">{{text}}.</div>
 <div v-show="!isShow">{{text}}.</div>
 ~~~
-
-
 
 `template`，不破坏原有 dom 结构，类似 React 中的 `Fragment`，可配合 `v-if` 使用，不能配合 `v-show`
 
@@ -566,13 +520,9 @@ data {
 
 ### Vue 中的 Key
 
-
-
 **虚拟 Dom 中 key 的作用**
 
 key 是虚拟 DOM 对象的标识，当数据发生变化时，Vue 会根据新数据生成新的虚拟 DOM。然后将新虚拟 DOM 和旧虚拟 DOM 进行差异比较（diff 算法）。
-
-
 
 **虚拟节点对比规则**
 
@@ -589,17 +539,11 @@ key 是虚拟 DOM 对象的标识，当数据发生变化时，Vue 会根据新�
 </li>
 ~~~
 
-
-
-
-
 **用 index 作为 key 可能引发的问题**
 
 若对数据进行：逆序添加、逆序删除等破坏顺序操作，index 发生改变会产生没有必要的更新
 
 如果 DOM 结构包含输入类节点，会产生错误的更新
-
-
 
 **如何合理选择 key？**
 
@@ -637,8 +581,6 @@ new Vue({
 
 
 ### 列表排序
-
-
 
 可用 `watch` 或 `computed` 实现
 
@@ -680,8 +622,6 @@ new Vue({
 
 
 ### 列表过滤
-
-
 
 使用 `computed` 不直接修改原数组
 
@@ -751,8 +691,6 @@ function Observer(obj) {
 
 ### Vue 监视数据原理
 
-
-
 1. vue 会监视 data 中所有层次的数据。
 2. 监测对象中的数据是通过 `setter` 实现监视，且要在 new Vue 时就传入要监测的数据
    1. 向对象添加的属性，Vue 默认不做响应式处理
@@ -776,8 +714,6 @@ function Observer(obj) {
 
 
 ### 输入框的不同类型
-
-
 
 1. `<input type="text"/>`，`v-model` 收集的是 value 值，用户输入的就是 value 值；
 2. `<input type="radio"/>`，`v-model` 收集的是 value 值，且要给标签配置 value 值。
@@ -852,13 +788,9 @@ new Vue({
 
 ## 过滤器
 
-
-
 **什么是过滤器？**
 
 对要展示的数据进行一些特定的处理后再渲染，比较适用于一些简单的逻辑处理、格式化。
-
-
 
 **语法**
 
@@ -866,11 +798,7 @@ new Vue({
 
 局部注册： `new Vue({filters: {...}})`
 
-
-
 在 vue 中使用：`{{ xxx | filterName }}` 或 `v-bind="xxx | filterName"`
-
-
 
 **注意：**
 
@@ -915,8 +843,6 @@ new Vue({
 
 ### v-text
 
-
-
 - 向其所在的 dom 节点渲染文本内容
 - 与插值语法的区别：`v-test` 会替换节点中的内容， `{{xx}}` 不会
 
@@ -928,18 +854,12 @@ new Vue({
 
 ### v-html
 
-
-
 作用：向指定节点中渲染包含 html 结构的内容
-
-
 
 与插值语法的区别：
 
 - `v-html` 会替换节点中所有内容，插值语法不会
 - `v-html` 可识别 html 结构
-
-
 
 注意：
 
@@ -949,8 +869,6 @@ new Vue({
 
 
 ### v-cloak
-
-
 
 本质是一个特殊属性，Vue 实例创建完毕并接管容器后，会删掉 `v-cloak` 属性。
 
@@ -971,8 +889,6 @@ new Vue({
 
 ### v-once
 
-
-
 `v-once` 所在节点在初次渲染之后，就被视为静态内容。后续数据改变引起的更新也不会引起 `v-once` 所在结构的更新，用于优化性能。
 
 ~~~html
@@ -984,8 +900,6 @@ new Vue({
 
 
 ### v-pre
-
-
 
 作用：跳过所在节点的编译过程，可通过它跳过没有使用插值语法、指令语法等的节点，加快编译，提高效率
 
@@ -1013,8 +927,6 @@ new Vue({
 Vue.directive(xxx: Object/callback)
 ~~~
 
-
-
 **指令配置对象的三个回调**
 
 ~~~js
@@ -1037,8 +949,6 @@ new Vue({
     }
 })
 ~~~
-
-
 
 **注意事项**
 
@@ -1075,15 +985,11 @@ new Vue({
 
 ## 模块化与组件化
 
-
-
 **模块化**
 
 模块：向外提供特定功能的 js 程序或集合，通常是一个 js 文件。以模块导出就是模块化。
 
 作用：复用 js，提高效率
-
-
 
 **组件化**
 
@@ -1105,15 +1011,11 @@ new Vue({
 
 单文件组件：一个文件中只有1个组件
 
-
-
 **组件使用的3个步骤**
 
 1. 定义组件（创建组件）
 2. 注册组件
 3. 使用组件（组件标签）
-
-
 
 **1.定义组件**
 
@@ -1139,8 +1041,6 @@ const school = Vue.extend({
 });
 ~~~
 
-
-
 **2.注册组件**
 
 ~~~js
@@ -1155,8 +1055,6 @@ new Vue({
 Vue.component("hello", A);
 ~~~
 
-
-
 **组件名写法**
 
 - 一个单词组成：
@@ -1166,15 +1064,11 @@ Vue.component("hello", A);
   -  写法1 (kebab-case命名)：my-school
   -  写法2 (CamelCase命名)：MySchool (需要Vue脚手架支持)
 
-
-
 **组件标签**
 
 写法1：`<school></school>`
 
 写法2：`<school/>` 需脚手架支持
-
-
 
 **简写**
 
@@ -1197,8 +1091,6 @@ new Vue({
     },
 });
 ~~~
-
-
 
 **组件嵌套**
 
@@ -1244,8 +1136,6 @@ new Vue({
 
 ## **VueComponent**
 
-
-
 - 组件本质上是一个名为 VueComponent 的构造函数，通过 `Vue.extend` 生成的
 - 我们只需编写 `<school></school>`，Vue 解析时会帮我们创建组件的实例对象，即执行 `new VueComponent(options)`
 - 每次调用 `Vue.extend`，返回的是一个全新的 VueComponent
@@ -1272,15 +1162,11 @@ new Vue({
 
 ## Cli 核心
 
-
-
 ### 不同版本的 Vue
 
 Q：为啥在 `main.js` 用 `components` 写法注册组件会失败？
 
 A：脚手架引入的 vue 是`vue.runtime.xxx.js`，没有模板解析器。
-
-
 
 - vue.js 与 vue.runtime.xxx.js 区别
   - vue.js 是完整版的 Vue，包含：核心功能 + 模板解析器。
@@ -1341,3 +1227,65 @@ new Vue({
    > 备注：props 是只读的，Vue 底层会监测你对 props 的修改，如果进行了修改，就会发出警告。若业务需求确实需要修改，那么请复制 props 的内容到 data 中一份，然后去修改 data 中的数据。
 
 父组件传值时要注意用 v-bind 绑定的是表达式，否则一律当作字符串处理。
+
+
+
+### mixin混入
+
+是什么？将多个组件公用的配置提取成一个混入对象，提高代码复用率
+
+怎么用？
+
+```js
+// 1.定义混合
+{
+    data(){....},
+    methods:{....}
+    ....
+}
+// 全局使用
+Vue.mixin(xxx)
+// 局部使用
+mixins:['xxx', 'yyy']
+```
+
+
+
+### install插件
+
+1. 功能：增强 Vue
+
+2. 本质：包含 install 方法的一个对象，install 第一个参数是 Vue，第二个以后的参数是用户传递的数据。
+
+3. 定义插件：
+
+   ```js
+   对象.install = function (Vue, options) {
+       // 1. 添加全局过滤器
+       Vue.filter(....)
+   
+       // 2. 添加全局指令
+       Vue.directive(....)
+   
+       // 3. 配置全局混入(合)
+       Vue.mixin(....)
+   
+       // 4. 添加实例方法
+       Vue.prototype.$myMethod = function () {...}
+       Vue.prototype.funcName = xxxx
+   }
+   ```
+
+4. 使用插件：`Vue.use()`
+
+
+
+### scoped样式
+
+1. 作用：让样式在局部生效，防止命名冲突
+2. 写法：`<style scoped>`
+
+
+
+### TodoList实例总结
+
