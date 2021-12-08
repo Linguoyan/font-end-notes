@@ -340,7 +340,7 @@ vm.$watch("isHot", {
 - 监测单个属性可通过 `"obj.xxx"` 
 
 ~~~js
-watch {
+watch: {
     "number.b": {
         handler() {
             console.log("b is updated");
@@ -348,6 +348,7 @@ watch {
     },
     number: {
         deep: true, // 监视对象所有属性的变化
+        immediate: true, // 初始化就触发
         ...
     }
 }
@@ -1255,7 +1256,7 @@ mixins:['xxx', 'yyy']
 
 1. 功能：增强 Vue
 
-2. 本质：包含 install 方法的一个对象，install 第一个参数是 Vue，第二个以后的参数是用户传递的数据。
+2. 本质：包含 `install ` 方法的一个对象，`install` 第一个参数是 Vue，第二个以后的参数是用户传递的数据。
 
 3. 定义插件：
 
@@ -1288,4 +1289,204 @@ mixins:['xxx', 'yyy']
 
 
 ### TodoList实例总结
+
+组件化编码流程：
+- 拆分静态组件：按功能点拆分，命名不能与 html 元素冲突
+- 实现动态组件：考虑好数据的存放位置，数据是一个还是多个组件在用？
+  - 一个组件在用：放在组件自身即可
+  - 多个组件在用：放在他们共同的父组件上（状态提升）
+
+- 实现交互：从绑定事件开始
+
+props 适用于：
+- 父组件向子组件通信传值
+-  子组件父组件通信（通过父给子传递函数）
+
+使用 `v-model` 切记：`v-model` 绑定的值不能是 `props` 的值，因为 `props` 不可修改
+
+`props` 传过来的若是对象类型，修改对象中的属性时 Vue 不报错，但不推荐这样做
+
+
+
+### 自定义事件
+
+本质上是组件间通信的方式，适用于**子向父传值**
+
+自定义事件使用
+
+~~~html
+<!-- 自定义事件绑定 -->
+<Demo @onEvent="test"/>
+<Demo v-on:onEvent="test"/>
+<!-- 使用 ref 调用 -->
+<Demo ref="demo" />
+<script>
+    mounted(){
+        this.$refs.xxx.$on('eventname',this.func)
+    }
+</script>
+
+<!-- 只触发一次 -->
+<Demo ref="demo" once />
+<script>
+    mounted(){
+        this.$refs.demo.$once('eventname', this.func)
+    }
+
+
+// 子组件触发自定义事件
+this.$emit('eventname', params)
+
+// 解绑自定义事件
+this.$off('eventname') // 解绑一个自定义事件
+this.$off(['eventname1','eventname2']) // 解绑多个自定义事件
+this.$off() // 解绑所有的自定义事件
+</script>
+~~~
+
+
+
+组件上也可以绑定原生 DOM 事件，需要使用 `native` 修饰符
+
+~~~html
+<Student ref="student" @click.native="show"/>
+~~~
+
+
+
+注意：通过 `this.$refs.xxx.$on('atguigu',callback)` 绑定自定义事件时，回调要么配置在 methods 中，要么用箭头函数，否则 this 指向会出问题
+
+
+
+### 全局事件总线
+
+一种组件间通信的方式，适用于任意组件间通信
+
+安装全局事件总线：
+
+~~~js
+new Vue({
+    // ...
+    beforeCreate() {
+        Vue.prototype.$bus = this //安装全局事件总线，$bus就是当前应用的vm
+    },
+    // ...
+}) 
+~~~
+
+
+
+使用事件总线：
+
+接收数据：组件A要的数据，则在组件A中给 $bus 绑定自定义事件，事件回调留在A组件自身。
+
+~~~js
+methods() {
+  demo(data){......}
+}
+......
+mounted() {
+  this.$bus.$on('xxxx',this.demo)
+}
+~~~
+
+- 提供数据：`this.$bus.$emit('xxxx',数据)`
+
+
+- 最好在 `beforeDestroy` 钩子中，用 `$off` 去解绑当前组件所用到的事件。而自定义事件不需要解绑，因为它会随着组件的销毁而去除。
+
+
+
+### nextTick
+
+作用：在下一次 DOM 更新结束后执行其指定的回调。
+
+使用场景：当改变数据后，要基于更新后的新 DOM 进行操作时，可在 `nextTick` 所指定的回调函数中执行。
+
+~~~js
+this.$nextTick(function(){
+    this.$refs.inputRef.focus()
+})
+~~~
+
+
+
+### Vue封装的过渡和动画
+
+作用：在插入、更新或移除 DOM 元素时，在合适的时机给元素添加样式类名
+
+API：使用 `<transition>` 包裹要过度的元素，并配置 `name ` 属性。如果没有名字，则 `v-` 是类名默认前缀
+
+- 元素进入的样式
+  1. v-enter：进入的起点
+  2. v-enter-active：进入过程中
+  3. v-enter-to：进入的终点
+- 元素离开的样式
+  1. v-leave：离开的起点
+  2. v-leave-active：离开过程中
+  3. v-leave-to：离开的终点
+
+```vue
+<transition name="hello">
+	<h1 v-show="isShow">你好啊！</h1>
+</transition>
+```
+
+
+
+备注：若有多个元素需要过度，则需要使用：`<transition-group>`，且每个元素都要指定 `key` 值。
+
+
+
+### 脚手架代理配置
+
+**方法一**
+
+```js
+// vue.config.js
+devServer:{
+  proxy:"http://localhost:5000"
+}
+```
+
+> 说明：
+>
+> 1. 优点：配置简单，请求资源时直接发给前端（8080）即可
+> 2. 缺点：不能配置多个代理，请求控制不灵活
+> 3. 注意：上述配置代理优先匹配本地服务器资源，如果请求的资源不存在时，请求才会转发给服务器 
+
+
+
+**方法二**
+
+```js
+// vue.config.js
+module.exports = {
+	devServer: {
+      proxy: {
+      '/api1': {// 匹配所有以 '/api1'开头的请求路径
+        target: 'http://localhost:5000',// 代理目标的基础路径
+        ws: true, // websocket 是否开启，默认 true
+        changeOrigin: true,
+        pathRewrite: {'^/api1': ''}
+      },
+      '/api2': {// 匹配所有以 '/api2'开头的请求路径
+        target: 'http://localhost:5001',// 代理目标的基础路径
+        changeOrigin: true,
+        pathRewrite: {'^/api2': ''}
+      }
+    }
+  }
+}
+/*
+   changeOrigin 设置为 true，服务器收到的请求头中的 host 为：localhost:5000（骗子）
+   changeOrigin 设置为 false，服务器收到的请求头中的 host 为：localhost:8080（真实）
+   changeOrigin 默认值为 true
+*/
+```
+
+> 说明：
+>
+> 1. 优点：可以配置多个代理，可灵活的控制请求是否走代理
+> 2. 缺点：配置略微繁琐，请求资源时必须加前缀
 
