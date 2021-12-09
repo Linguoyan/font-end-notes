@@ -502,7 +502,7 @@ data {
 
 ~~~html
 <!-- 数组遍历 -->
-<li v-for="(p, index) id persons" :key="p.id">
+<li v-for="(p, index) in persons" :key="p.id">
     {{p.name}}-{{p.age}}
 </li>
 
@@ -1490,3 +1490,110 @@ module.exports = {
 > 1. 优点：可以配置多个代理，可灵活的控制请求是否走代理
 > 2. 缺点：配置略微繁琐，请求资源时必须加前缀
 
+
+
+### 插槽
+
+作用：一种组件间通信的方式，父组件可以向子组件指定位置插入 html 结构，适用于父组件 => 子组件
+
+三种方式：默认插槽、具名插槽、作用域插槽
+
+默认插槽：简单的方式
+
+```html
+<!-- 父组件 -->
+<Category>
+    <div>html结构1</div>
+</Category>
+<!-- 子组件中 -->
+<template>
+    <div>
+        <!-- 定义插槽 -->
+        <slot>插槽默认内容...</slot>
+    </div>
+</template>
+```
+
+具名插槽：指定插槽名称，根据插槽名称渲染组件
+
+```html
+<!-- 父组件 -->
+<Category>
+    <template slot="top">
+        <div>html结构1</div>
+    </template>
+    <!-- 此编写方式需配合template使用 -->
+    <template v-slot:footer>
+        <div>html结构2</div>
+    </template>
+</Category>
+<!-- 子组件 -->：
+<template>
+    <div>
+        <!-- 定义插槽 -->
+        <slot name="center">插槽默认内容(当使用者没有传递具体结构时，我会出现)</slot>
+        <slot name="footer">插槽默认内容(当使用者没有传递具体结构时，我会出现)</slot>
+    </div>
+</template>
+```
+
+作用域插槽：数据在组件的自身，但根据数据生成的结构需要组件的使用者（父组件）决定。（插槽组件向使用者传递数据）
+
+```html
+<!-- 父组件1 -->
+<Category>
+    <!-- scope需配合template使用 -->
+    <template scope="scopeData">
+        <!-- 生成ul -->
+        <ul>
+            <li v-for="g in scopeData.games" :key="g">{{g}}</li>
+        </ul>
+    </template>
+</Category>
+<!-- 父组件2 -->
+<Category>
+    <template slot-scope="scopeData">
+        <!-- 生成的是h4 -->
+        <h4 v-for="g in scopeData.games" :key="g">{{g}}</h4>
+    </template>
+</Category>
+
+<!-- 子组件 -->
+<template>
+    <div>
+        <slot :games="games"></slot>
+    </div>
+</template>
+
+<script>
+    export default {
+        name:'Category',
+        props:['title'],
+        //数据在子组件自身
+        data() {
+            return {
+                games:['红色警戒','穿越火线','劲舞团','超级玛丽']
+            }
+        },
+    }
+</script>
+```
+
+
+
+## Vuex
+
+
+
+### 概念
+
+在 Vue 中实现集中式（对应分布式）状态（数据）管理的一个 Vue 插件。对 Vue 应用中多个组件的共享状态进行集中式的管理（读/写），也是一种组件间通信的方式，且适用于任意组件间通信。
+
+使用场景：当多个组件需要共享状态时。
+
+![](https://vuex.vuejs.org/vuex.png)
+
+- State：单一状态树，用一个对象包含了 Vue 全部应用的状态
+- Getter：类似计算属性，返回 state 处理计算后的结果，不改变 state，当依赖值改变才会重新计算
+- Actions：提交 mutation，不直接改变状态，可以包含异步操作
+- Mutations：store 中改变状态的唯一方法，如果明确改变 state 的值，那么可直接调用，无需经过 Actions
