@@ -1597,3 +1597,16 @@ module.exports = {
 - Getter：类似计算属性，返回 state 处理计算后的结果，不改变 state，当依赖值改变才会重新计算
 - Actions：提交 mutation，不直接改变状态，可以包含异步操作
 - Mutations：store 中改变状态的唯一方法，如果明确改变 state 的值，那么可直接调用，无需经过 Actions
+
+
+
+## Vue-Router
+
+
+
+单页面/多页面应用
+
+路由切换组件哪去了？销毁了
+
+$route、$router一样吗？window挂载比较
+
