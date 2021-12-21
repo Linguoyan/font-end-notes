@@ -162,7 +162,7 @@ Object.defineProperty(obj2, "x", {
 - 事件的回调函数配置在 `methods` 中，最终挂载到 `vm` 上
 - `methods` 中配置的函数不可使用箭头函数，否则 `this` 就不会指向 `vm` 了
 - `methods` 中配置的函数是被 `Vue` 管理的函数，`this` 指向 `vm` 或实例对象
-- `@click="demo"` 和 `@click="demo(num, $event)"` 效果一样，后者可以传参
+- `@click="demo"` 和 `@click="demo(num, $event)"` 效果一样，前者默认传参 `event`，后者括号自定义传参
 
 
 
