@@ -1727,3 +1727,22 @@ nginx -s reload
 **redis 缓存优化**
 
 将请求成功的 `body` 内容写入（存储）`redis` 上，遇到下一次相同请求时就能命中该缓存，减少计算量，空间换时间。
+
+
+
+# NPM
+
+
+
+### 缓存清理
+
+~~~js
+// 清理
+$ npm cache clean --force
+// 查看npm缓存位置
+$ npm cache dir
+$ npm config list --json
+~~~
+
+
+

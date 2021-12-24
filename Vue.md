@@ -859,7 +859,7 @@ new Vue({
 
 与插值语法的区别：
 
-- `v-html` 会替换节点中所有内容，插值语法不会
+- `v-html` 会替换节点内所有内容，插值语法不会
 - `v-html` 可识别 html 结构
 
 注意：
@@ -1254,30 +1254,30 @@ mixins:['xxx', 'yyy']
 
 ### install插件
 
-1. 功能：增强 Vue
+功能：增强 Vue
 
-2. 本质：包含 `install ` 方法的一个对象，`install` 第一个参数是 Vue，第二个以后的参数是用户传递的数据。
+本质上是一个包含 `install ` 方法的对象。`install` 第1个参数是 Vue，第2个以后的参数是用户传递的数据。
 
-3. 定义插件：
+定义插件：
 
-   ```js
-   对象.install = function (Vue, options) {
-       // 1. 添加全局过滤器
-       Vue.filter(....)
-   
-       // 2. 添加全局指令
-       Vue.directive(....)
-   
-       // 3. 配置全局混入(合)
-       Vue.mixin(....)
-   
-       // 4. 添加实例方法
-       Vue.prototype.$myMethod = function () {...}
-       Vue.prototype.funcName = xxxx
-   }
-   ```
+```js
+对象.install = function (Vue, options) {
+    // 1. 添加全局过滤器
+    Vue.filter(....)
 
-4. 使用插件：`Vue.use()`
+    // 2. 添加全局指令
+    Vue.directive(....)
+
+    // 3. 配置全局混入(合)
+    Vue.mixin(....)
+
+    // 4. 添加实例方法
+    Vue.prototype.$myMethod = function () {...}
+    Vue.prototype.funcName = xxxx
+}
+```
+
+使用插件：`Vue.use()`
 
 
 
@@ -1537,6 +1537,8 @@ module.exports = {
 </template>
 ```
 
+
+
 作用域插槽：数据在组件的自身，但根据数据生成的结构需要组件的使用者（父组件）决定。（插槽组件向使用者传递数据）
 
 ```html
@@ -1597,3 +1599,191 @@ module.exports = {
 - Getter：类似计算属性，返回 state 处理计算后的结果，不改变 state，当依赖值改变才会重新计算
 - Actions：提交 mutation，不直接改变状态，可以包含异步操作
 - Mutations：store 中改变状态的唯一方法，如果明确改变 state 的值，那么可直接调用，无需经过 Actions
+
+
+
+### 基本使用
+
+```js
+//1. 创建 src/store/index.js
+import Vue from 'vue'
+import Vuex from 'vuex'
+Vue.use(Vuex); //应用Vuex插件
+
+const actions = {
+    plus(context,value){
+		context.commit('PLUS',value)
+	},
+}
+const mutations = {
+    PLUS(state,value){
+		state.sum += value
+	}
+}
+// 当state中的数据需要经过加工后再使用时，可以使用getters加工
+const getters = {
+	bigSum(state){
+		return state.sum * 10
+	}
+}
+const state = {
+    sum: 0
+}
+
+//创建并暴露 store
+export default new Vuex.Store({
+	actions,
+	mutations,
+	state
+})
+
+//2. 在main.js引入
+import store from './store'
+new Vue({
+	el:'#app',
+	render: h => h(App),
+	store
+})
+```
+
+
+
+### store数据读取
+
+组件中读取 vuex 的数据：`$store.state.sum`、`$store.getters.bigSum`
+
+组件中修改 vuex 的数据：`$store.dispatch('action-name', value)` 或 `$store.commit('mutations-name',value)`
+
+> 备注：若没有网络请求或其他业务逻辑，组件中也可以越过actions，即不写`dispatch`，直接编写`commit`
+
+
+
+### Vuex的map方法
+
+**mapState**：映射 `state` 中的数据作为计算属性
+
+```js
+computed: {
+    // 对象写法
+     ...mapState({getSum:'sum',getSchool:'school'}),
+         
+    // 数组写法
+    ...mapState(['sum','school']),
+},
+```
+
+**mapGetters**：映射 `getters` 中的数据作为计算属性
+
+```js
+computed: {
+    // 对象写法
+    ...mapGetters({toBig:'bigSum'}),
+
+    // 数组写法
+    ...mapGetters(['bigSum'])
+},
+```
+
+**mapActions**：生成与 `actions` 对应的方法，即：`$store.dispatch(xxx)` 的函数
+
+```js
+methods:{
+    // 对象形式
+    ...mapActions({incrementOdd:'jiaOdd',incrementWait:'jiaWait'})
+
+    // 数组形式
+    ...mapActions(['jiaOdd','jiaWait'])
+}
+```
+
+**mapMutations**：生成与 `mutations ` 对应的方法，即：`$store.commit(xxx)`的函数
+
+```js
+methods:{
+    // 对象形式
+    ...mapMutations({increment:'JIA',decrement:'JIAN'}),
+    
+    // 对象形式
+    ...mapMutations(['JIA','JIAN']),
+}
+```
+
+> 备注：mapActions与mapMutations使用时，若需要传递参数需要：在模板中绑定事件时传递好参数，否则参数是事件对象。
+
+
+
+### Vuex模块化
+
+目的：让代码更好维护，让多种数据分类更加明确。
+
+~~~js
+// store/index.js
+const count = {
+  namespaced: true,//开启命名空间
+  state:{x:1},
+  mutations: { },
+  actions: { },
+  getters: {
+    bigSum(state){
+       return state.sum * 10
+    }
+  }
+}
+const user = {
+  namespaced: true,//开启命名空间
+  state:{ },
+  mutations: { },
+  actions: { }
+}
+const store = new Vuex.Store({
+  modules: {
+    count,
+    user
+  }	
+})
+~~~
+
+
+
+开启命名空间后，读取 state
+
+~~~js
+// 方式一：this读取
+this.$store.state.user.list
+// 方式二：mapState
+...mapState('user',['sum','school','subject']),`
+~~~
+
+
+
+开启命名空间后，读取 getters
+
+~~~js
+// 方式一：this读取
+this.$store.getters['person/firstPersonName']
+// 方式二：mapGetters
+...mapGetters('person',['bigSum'])
+~~~
+
+
+
+开启命名空间后，调用 dispatch
+
+~~~js
+// 方式一：this
+this.$store.dispatch('person/addPersonWang', value)
+// 方式二：mapActions：
+...mapActions('person',{incrementOdd:'jiaOdd',incrementWait:'jiaWait'})
+~~~
+
+
+
+开启命名空间后，调用 commit
+
+~~~js
+// 方式一：this
+this.$store.commit('person/ADD_PERSON', value)
+// 方式二：mapMutations：
+...mapMutations('person',{ increment:'JIA',decrement:'JIAN' }),
+~~~
+
