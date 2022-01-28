@@ -600,7 +600,7 @@ function Observer(obj) {
    1. push()、pop()、shift()、unshift()、splice()、sort()、reverse()
    2. Vue.set() 或 vm.$set()
 
-​
+
 
 **注意：`Vue.set()` 和 `vm.$set()` 不能给 vm 或 vm 的根数据对象(vm.data)添加属性**
 
@@ -617,7 +617,7 @@ function Observer(obj) {
 - `v-model` 的初始值是非数组，则收集的是 checked（勾选 or 未勾选，是布尔值）
 - `v-model` 的初始值是数组，则收集的的是 value 组成的数组
 
-​ 4. `v-model` 的三个修饰符
+ 4. `v-model` 的三个修饰符
 
 - lazy：失去焦点再收集数据，避免多次出发更新
 
@@ -1590,8 +1590,369 @@ this.$store.commit('person/ADD_PERSON', value)
 
 ## Vue-Router
 
-单页面/多页面应用
+> 单页面/多页面应用
+>
+> 路由切换组件哪去了？销毁了
+>
+> $route、$router 一样吗？window 挂载比较
 
-路由切换组件哪去了？销毁了
+理解： 一个路由（route）就是一组映射关系（key - value），key 是路径，value 是组件。多个路由需要路由器（router）进行管理。
 
-$route、$router 一样吗？window 挂载比较
+### 基本使用
+
+router.js 配置
+
+~~~js
+// 安装vue-router，命令：npm i vue-router
+// 引入
+import VueRouter from 'vue-router'
+import About from '../components/About'
+import Home from '../components/Home'
+// 创建router实例对象，去管理一个个路由规则
+const router = new VueRouter({
+	routes:[{
+			path:'/about',
+			component:About
+		},
+		{
+			path:'/home',
+			component:Home
+		}]
+})
+export default router;
+~~~
+
+active-class 配置当前路由激活样式
+
+~~~html
+<router-link active-class="active" to="/about">About</router-link>
+~~~
+
+路由对应组件展示
+
+~~~html
+<router-view></router-view>
+~~~
+
+### 几个注意点
+
+1. 路由组件通常存放在 `pages` 文件夹，一般组件通常存放在 `components` 文件夹
+2. 通过路由切换，组件被「隐藏了」。实际上是被销毁了，需要的时候再去挂载
+3. 每个路由组件都有自己的 `$route` 属性，里面存储着自己的路由信息
+4. 整个应用只有一个 `$router`，可以通过组件的 `$router` 属性获取到
+
+### 多级路由
+
+~~~js
+// router.js
+routes:[{
+        path:'/about',
+        component:About,
+    },{
+        path:'/home',
+        component:Home,
+        children:[ //通过children配置子级路由
+            {
+                path:'news', //此处一定不要写：/news
+                component:News
+            },
+            {
+                path:'message',//此处一定不要写：/message
+                component:Message
+            }
+        ]
+    }]
+
+// 跳转要写完整路径
+<router-link to="/home/news">News</router-link>
+~~~
+
+### 路由参数
+
+#### query
+
+传递参数的几种方式
+
+~~~vue
+<!-- 跳转并携带 query 参数，to 的字符串写法 -->
+<router-link :to="/home/message/detail?id=666&title=你好">跳转</router-link>
+				
+<!-- 跳转并携带query参数，to 的对象写法 -->
+<router-link 
+	:to="{
+		path:'/home/message/detail',
+		query:{
+		   id:666,
+            title:'你好'
+		}
+	}"
+>跳转</router-link>
+~~~
+
+接受参数
+
+~~~js
+$route.query.id
+$route.query.title
+~~~
+
+#### param
+
+声明接收params参数
+
+~~~js
+{
+	path:'/home',
+	component:Home,
+	children:[{
+			path:'news',
+			component:News
+		},
+		{
+			component:Message,
+			children:[
+				{
+					name:'xiangqing',
+					path:'detail/:id/:title', // 使用占位符声明接收params参数
+					component:Detail
+				}
+			]
+		}]
+}
+~~~
+
+传递参数
+
+~~~vue
+<!-- 跳转并携带params参数，to的字符串写法 -->
+<router-link :to="/home/message/detail/666/你好">跳转</router-link>
+				
+<!-- 跳转并携带params参数，to的对象写法 -->
+<router-link 
+	:to="{
+		name:'xiangqing',
+		params:{
+		   id:666,
+            title:'你好'
+		}
+	}"
+>跳转</router-link>
+~~~
+
+> 注意：携带params参数时，若使用 to 的对象写法，则不能使用 path 配置项，必须使用 name 配置
+
+接收参数
+
+~~~js
+$route.params.id
+$route.params.title
+~~~
+
+### 命名路由
+
+作用：简化路由跳转
+
+~~~js
+{
+	path:'/demo',
+	component: Demo,
+	children:[
+		{
+			path:'test',
+			component: Test,
+			children:[
+				{
+                    name:'hello' // 给路由命名
+					path:'welcome',
+					component: Hello,
+				}
+			]
+		}
+	]
+}
+~~~
+
+如何简化跳转
+
+~~~html
+<!--简化前，需要写完整的路径 -->
+<router-link to="/demo/test/welcome">跳转</router-link>
+
+<!--简化后，直接通过名字跳转 -->
+<router-link :to="{name:'hello'}">跳转</router-link>
+
+<!--配合传递参数 -->
+<router-link 
+	:to="{
+		name:'hello',
+		query:{
+		   id:666,
+            title:'你好'
+		}
+	}"
+>跳转</router-link>
+~~~
+
+### 路由props
+
+作用：让路由组件更方便的收到参数
+
+~~~js
+{
+	name:'xiangqing',
+	path:'detail/:id',
+	component:Detail,
+
+	// 第一种写法：props值为对象，对象中所有的key-value最终都会通过props传给Detail组件
+	// props:{a:900}
+
+	// 第二种写法：props值为布尔值，为true则把路由收到的所有params参数通过props传给Detail组件
+	// props:true
+	
+	// 第三种写法：props值为函数，该函数返回的对象中每一组key-value都会通过props传给Detail组件
+	props(route){
+		return {
+			id:route.query.id,
+			title:route.query.title
+		}
+	}
+}
+~~~
+
+### replace属性
+
+作用：控制路由跳转时操作浏览器历史记录的模式
+
+浏览器的历史记录有两种写入方式：`push` 和 `replace`，`push` 是追加历史记录，`replace`是替换当前记录。路由跳转时候默认为 `push`
+
+开启 `replace` 模式： `<router-link replace .......>News</router-link>`
+
+### 编程式路由导航
+
+作用：不借助 `<router-link> ` 实现路由跳转，让路由跳转更加灵活
+
+```js
+//$router的两个API
+this.$router.push({
+	name:'xiangqing',
+		params:{
+			id:xxx,
+			title:xxx
+		}
+})
+
+this.$router.replace({
+	name:'xiangqing',
+		params:{
+			id:xxx,
+			title:xxx
+		}
+})
+this.$router.forward() //前进
+this.$router.back() //后退
+this.$router.go() //可前进也可后退
+```
+
+### 缓存路由组件
+
+作用：让不展示的路由组件保持挂载，不被销毁。
+
+```vue
+<keep-alive include="News"> 
+    <router-view></router-view>
+</keep-alive>
+```
+
+### 两个新的生命周期钩子
+
+作用：路由组件所独有的两个钩子，用于捕获路由组件的激活状态。
+
+具体名字：
+
+- `activated` 路由组件被激活时触发。
+- `deactivated` 路由组件失活时触发。
+
+### 路由守卫
+
+作用：对路由进行权限控制
+
+分类：全局守卫、独享守卫、组件内守卫
+
+#### 全局守卫
+
+```js
+// 全局前置守卫：初始化时执行、每次路由切换前执行
+router.beforeEach((to,from,next)=>{
+	console.log('beforeEach',to,from)
+	if(to.meta.isAuth){ // 判断当前路由是否需要进行权限控制
+		if(localStorage.getItem('school') === 'atguigu'){ // 权限控制的具体规则
+			next() // 放行
+		}else{
+			alert('暂无权限查看')
+			// next({name:'guanyu'})
+		}
+	}else{
+		next() // 放行
+	}
+})
+
+// 全局后置守卫：初始化时执行、每次路由切换后执行
+router.afterEach((to,from)=>{
+	console.log('afterEach',to,from)
+	if(to.meta.title){ 
+		document.title = to.meta.title // 修改网页的title
+	}else{
+		document.title = 'vue_test'
+	}
+})
+```
+
+#### 独享守卫
+
+```js
+beforeEnter(to,from,next){
+	console.log('beforeEnter',to,from)
+	if(to.meta.isAuth){ //判断当前路由是否需要进行权限控制
+		if(localStorage.getItem('school') === 'atguigu'){
+			next()
+		}else{
+			alert('暂无权限查看')
+			// next({name:'guanyu'})
+		}
+	}else{
+		next()
+	}
+}
+```
+
+#### 组件内守卫
+
+```js
+//进入守卫：通过路由规则，进入该组件时被调用
+beforeRouteEnter (to, from, next) {
+},
+//离开守卫：通过路由规则，离开该组件时被调用
+beforeRouteLeave (to, from, next) {
+}
+```
+
+### 路由器的两种工作模式
+
+对于一个 url 来说，什么是 hash 值？—— `#` 及其后面的内容就是 hash 值
+
+hash 值不会包含在 HTTP 请求中，即：hash值不会带给服务器。
+
+hash 模式：
+
+- 地址中永远带着#号，不美观 ，但兼容性较好。
+- 若以后将地址通过第三方手机 app 分享，若 app 校验严格地址会被标记为不合法。
+
+history 模式：
+
+- 地址干净美观，兼容性和hash模式相比略差。
+- 应用部署上线时需要后端人员支持，解决刷新页面服务端404的问题。
+
+ 
+
+
+
