@@ -1,4 +1,4 @@
-# React
+# interview
 
 最近准备跳槽，就意味着要进行面试，趁着出差比较闲，整理了一些前端面试资料，包含了 react、redux、router、webpack 等前端常用技术。
 
@@ -562,6 +562,26 @@ const RenderComponent = loadable(() => import('./com'), {
 
 
 ------
+
+
+
+# Vue
+
+
+
+### MVC 和 MVVM 的区别
+
+MVC：View 传递事件触发 Controller，Controller 触发 Model 层事件，Model 层更新完数据之后触发 View 更新页面。具有单向数据流动的特征。
+
+MVVM：View 和 ViewModel 相互绑定，自动同步，简化了业务和页面之间的依赖。
+
+Vue 并没有完全遵循 MVVM 的思想，因为 Vue 提供了 `$refs` 属性，让 Model 可以直接操作 View，违反了 MVVM 的规定。
+
+
+
+
+
+
 
 
 
