@@ -785,7 +785,7 @@ module.exports = {
 
 
 
-- ES6 Module 静态的，不能放在块级作用域内，代码发生在编译时。
+- ES6 Module **静态**的，不能放在块级作用域内，代码发生在编译时。
 - ES6 Module 和 CommonJS 一样，对模块有缓存机制，处理时采用深度优先遍历。
 - ES6 Module 可以导出多个属性和方法，可以单个导入导出，混合导入导出。
 - ES6 Module 导入模块在严格模式下。
@@ -1727,3 +1727,22 @@ nginx -s reload
 **redis 缓存优化**
 
 将请求成功的 `body` 内容写入（存储）`redis` 上，遇到下一次相同请求时就能命中该缓存，减少计算量，空间换时间。
+
+
+
+# NPM
+
+
+
+### 缓存清理
+
+~~~js
+// 清理
+$ npm cache clean --force
+// 查看npm缓存位置
+$ npm cache dir
+$ npm config list --json
+~~~
+
+
+
